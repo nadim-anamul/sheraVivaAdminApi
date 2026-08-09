@@ -52,7 +52,6 @@ class ExaminerPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                \App\Http\Middleware\EnsureUserIsExaminer::class,
             ]);
     }
 }
