@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust Hostinger/hCDN (and other reverse proxies) so HTTPS is detected correctly.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'api.key' => \App\Http\Middleware\VerifyApiKey::class,
         ]);

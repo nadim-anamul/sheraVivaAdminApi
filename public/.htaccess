@@ -14,6 +14,13 @@
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
     # Redirect Trailing Slashes If Not A Folder...
+    # When the domain docroot is the project root (Hostinger default), Apache's
+    # internal rewrite into public/ makes REQUEST_URI look like /public/....
+    # Never expose that /public prefix in external redirects.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/public/(.+)/$
+    RewriteRule ^ /%1 [L,R=301]
+
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
