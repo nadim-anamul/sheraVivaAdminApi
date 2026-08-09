@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        'model_conversation' => env('GEMINI_MODEL_CONVERSATION', 'gemini-3.6-flash'),
+        'model_evaluation' => env('GEMINI_MODEL_EVALUATION', 'gemini-3.6-pro'),
+    ],
+
+    'admin' => [
+        'email' => env('ADMIN_EMAIL', 'admin@seraviva.com'),
+        'password' => env('ADMIN_PASSWORD', 'password'),
+    ],
+
+    'shera_viva' => [
+        'api_key' => env('SHERA_VIVA_API_KEY', 'sv_secret_key_123456'),
+    ],
+
 ];

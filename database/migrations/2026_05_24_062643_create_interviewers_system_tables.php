@@ -62,6 +62,7 @@ return new class extends Migration
             $table->enum('payment_status', ['pending', 'success', 'failed'])->default('pending');
             $table->string('payment_trx_id')->nullable();
             $table->string('livekit_room_name');
+            $table->string('meeting_code')->unique()->nullable();
             $table->integer('grade_score')->nullable();
             $table->text('feedback_remarks')->nullable();
             $table->timestamps();

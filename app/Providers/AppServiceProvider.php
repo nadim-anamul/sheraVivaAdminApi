@@ -19,6 +19,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Automatically sync admin user in DB with .env credentials during login attempts
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Attempting::class,
+            function (\Illuminate\Auth\Events\Attempting $event) {
+                $credentials = $event->credentials;
+                $adminEmail = config('services.admin.email');
+                $adminPassword = config('services.admin.password');
+
+                if ($adminEmail && $adminPassword && isset($credentials['email']) && $credentials['email'] === $adminEmail) {
+                    if (isset($credentials['password']) && $credentials['password'] === $adminPassword) {
+                        \App\Models\User::updateOrCreate(
+                            ['email' => $adminEmail],
+                            [
+                                'name' => 'Admin Manager',
+                                'password' => $adminPassword,
+                            ]
+                        );
+                    }
+                }
+            }
+        );
     }
 }

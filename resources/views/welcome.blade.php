@@ -1177,12 +1177,12 @@
                 <a href="#jobs">Job Portal</a>
                 <a href="#app">Mobile App</a>
                 @auth
-                    <a href="/admin" class="btn-primary">
+                    <a href="/dashboard" class="btn-primary">
                         <i class="fa-solid fa-gauge-high"></i> Dashboard
                     </a>
                 @else
-                    <a href="/admin/login" class="btn-secondary">Log in</a>
-                    <a href="/admin/register" class="btn-primary">Get Started</a>
+                    <a href="/login" class="btn-secondary">Log in</a>
+                    <a href="/register" class="btn-primary">Get Started</a>
                 @endauth
             </nav>
         </div>
@@ -1199,7 +1199,7 @@
                 <p>Prepare for BPSC Cadre, Bangladesh Bank AD, and Primary Teacher oral exams. Interact with expert board examiners and practice with real-time speech analytics & instant AI scorecards.</p>
                 
                 <div class="hero-actions">
-                    <a href="/admin/register" class="btn-primary">
+                    <a href="/register" class="btn-primary">
                         Start Mock Practice <i class="fa-solid fa-arrow-right"></i>
                     </a>
                     <a href="#experts" class="btn-secondary">

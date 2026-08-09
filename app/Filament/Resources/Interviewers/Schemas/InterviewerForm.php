@@ -20,7 +20,8 @@ class InterviewerForm
                     ->email()
                     ->required()
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->helperText('To log into the examiner panel, the examiner must register a user account with this exact email address.'),
                 TextInput::make('phone')
                     ->tel()
                     ->maxLength(255),

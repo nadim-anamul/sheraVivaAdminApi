@@ -18,6 +18,7 @@ class Booking extends Model
         'payment_status',
         'payment_trx_id',
         'livekit_room_name',
+        'meeting_code',
         'grade_score',
         'feedback_remarks',
     ];
@@ -26,6 +27,18 @@ class Booking extends Model
         'amount_paid' => 'decimal:2',
         'grade_score' => 'integer',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($booking) {
+            if (empty($booking->meeting_code)) {
+                $booking->meeting_code = 'vva-' . strtolower(\Illuminate\Support\Str::random(4)) . '-' . strtolower(\Illuminate\Support\Str::random(3));
+            }
+            if (empty($booking->livekit_room_name)) {
+                $booking->livekit_room_name = 'viva_room_' . strtolower(\Illuminate\Support\Str::random(8));
+            }
+        });
+    }
 
     /**
      * Get the slot booked by this booking.

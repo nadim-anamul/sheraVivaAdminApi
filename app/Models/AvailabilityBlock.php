@@ -66,5 +66,9 @@ class AvailabilityBlock extends Model
                 ]);
             }
         });
+
+        static::deleting(function ($block) {
+            $block->slots()->delete();
+        });
     }
 }

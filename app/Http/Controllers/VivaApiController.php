@@ -8,6 +8,10 @@ use App\Models\SessionEvaluation;
 use App\Models\Interviewer;
 use App\Models\Slot;
 use App\Models\Booking;
+use App\Models\QuestionBank;
+use App\Models\VivaAdvice;
+use App\Models\VivaRule;
+use App\Services\GeminiAiService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -27,9 +31,9 @@ class VivaApiController extends Controller
     }
 
     /**
-     * Saves candidate mock session logs and generates an instant simulated AI scorecard.
+     * Saves candidate mock session logs and generates a real AI-evaluated scorecard.
      */
-    public function saveSession(Request $request): JsonResponse
+    public function saveSession(Request $request, GeminiAiService $gemini): JsonResponse
     {
         $validated = $request->validate([
             'viva_category_id' => 'required|exists:viva_categories,id',
@@ -43,22 +47,20 @@ class VivaApiController extends Controller
             'viva_date' => now(),
         ]);
 
-        // Smart simulated AI evaluation to populate dynamic candidate metrics instantly
-        $score = rand(74, 94);
-        $fillers = rand(2, 8);
-        
         $category = VivaCategory::find($validated['viva_category_id']);
         $catTitle = $category ? $category->title : 'General';
 
-        $feedback = "Great attempt during your $catTitle mock viva session. You demonstrated good domain knowledge, structured your thoughts logically, and maintained a professional tone. ";
-        $recommendations = "1. Try to slow down your speaking pace slightly to avoid grammatical hesitations.\n2. Work on reducing filler words (e.g., 'like', 'um', 'basically') under pressure.\n3. Elaborate more on magistrates' judicial powers under active mobile court acts.";
+        // Evaluate the entire mock session conversation transcript using Gemini AI
+        $evaluationData = $gemini->evaluateSessionTranscript($validated['transcript'], $catTitle);
 
         $evaluation = SessionEvaluation::create([
             'mock_session_id' => $session->id,
-            'score' => $score,
-            'filler_words_count' => $fillers,
-            'feedback' => $feedback,
-            'recommendations' => $recommendations,
+            'score' => $evaluationData['score'] ?? 80,
+            'filler_words_count' => $evaluationData['filler_words_count'] ?? 3,
+            'feedback' => $evaluationData['feedback'] ?? '',
+            'recommendations' => is_array($evaluationData['recommendations'] ?? '')
+                ? implode("\n", $evaluationData['recommendations'])
+                : ($evaluationData['recommendations'] ?? ''),
         ]);
 
         return response()->json([
@@ -117,16 +119,22 @@ class VivaApiController extends Controller
     public function getLiveKitToken(Request $request): JsonResponse
     {
         $bookingId = $request->input('booking_id') ?? $request->query('booking_id');
+        $meetingCode = $request->input('meeting_code') ?? $request->query('meeting_code');
 
-        if (!$bookingId) {
+        if (!$bookingId && !$meetingCode) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'The booking_id field is required.'
+                'message' => 'The booking_id or meeting_code field is required.'
             ], 422);
         }
 
-        $booking = \App\Models\Booking::with(['slot.availabilityBlock', 'interviewer', 'candidate'])
-            ->find($bookingId);
+        $query = \App\Models\Booking::with(['slot.availabilityBlock', 'interviewer', 'candidate']);
+
+        if ($meetingCode) {
+            $booking = $query->where('meeting_code', $meetingCode)->first();
+        } else {
+            $booking = $query->find($bookingId);
+        }
 
         if (!$booking) {
             return response()->json([
@@ -403,6 +411,173 @@ class VivaApiController extends Controller
                 'upcoming_viva_sessions' => $upcomingBookings,
                 'recent_ai_recommendations' => $recentEvaluations,
             ]
+        ], 200);
+    }
+
+    /**
+     * Fetch viva experience question bank library.
+     */
+    public function getQuestionLibrary(Request $request): JsonResponse
+    {
+        $query = QuestionBank::query();
+
+        if ($request->filled('exam_type')) {
+            $query->where('exam_type', $request->query('exam_type'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->query('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('subject', 'like', "%{$search}%")
+                  ->orWhere('board', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->query('per_page') === 'all' || $request->boolean('all')) {
+            $items = $query->orderBy('id', 'desc')->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $items,
+                'meta' => [
+                    'total' => $items->count(),
+                    'per_page' => 'all',
+                ]
+            ], 200);
+        }
+
+        $perPage = (int) ($request->query('per_page', 20));
+        $items = $query->orderBy('id', 'desc')->paginate($perPage);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $items->items(),
+            'meta' => [
+                'current_page' => $items->currentPage(),
+                'last_page' => $items->lastPage(),
+                'per_page' => $items->perPage(),
+                'total' => $items->total(),
+            ]
+        ], 200);
+    }
+
+    /**
+     * Get single Question Bank experience detail.
+     */
+    public function getQuestionBankItem(Request $request, $id): JsonResponse
+    {
+        $item = QuestionBank::find($id);
+
+        if (!$item) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Question bank item not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $item
+        ], 200);
+    }
+
+    /**
+     * Retrieve Viva Advice articles/tips.
+     */
+    public function getAdvice(Request $request): JsonResponse
+    {
+        $advices = VivaAdvice::where('is_active', true)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $advices
+        ], 200);
+    }
+
+    /**
+     * Retrieve Viva Do's and Don'ts Rules.
+     */
+    public function getRules(Request $request): JsonResponse
+    {
+        $rules = VivaRule::where('is_active', true)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $rules
+        ], 200);
+    }
+
+    /**
+     * Generate dynamic AI Viva Question using Gemini 3.5 Flash.
+     */
+    public function generateAiQuestion(Request $request, GeminiAiService $gemini): JsonResponse
+    {
+        $validated = $request->validate([
+            'category' => 'required|string',
+            'transcript_history' => 'nullable|array',
+            'exam_type' => 'nullable|string',
+            'position' => 'nullable|string',
+            'candidate_cv' => 'nullable|string',
+        ]);
+
+        $category = $validated['category'];
+        $history = $validated['transcript_history'] ?? [];
+        $examType = $validated['exam_type'] ?? 'BCS';
+        $position = $validated['position'] ?? 'General';
+        $candidateCv = $validated['candidate_cv'] ?? '';
+
+        $questionData = $gemini->generateVivaQuestion($category, $history, $examType, $position, $candidateCv);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $questionData
+        ], 200);
+    }
+
+    /**
+     * Evaluate Candidate Answer using Gemini 3.5 Flash.
+     */
+    public function evaluateAnswer(Request $request, GeminiAiService $gemini): JsonResponse
+    {
+        $validated = $request->validate([
+            'question' => 'required|string',
+            'answer' => 'required|string',
+            'category' => 'nullable|string',
+            'viva_category_id' => 'nullable|exists:viva_categories,id',
+        ]);
+
+        $category = $validated['category'] ?? 'BCS General Board';
+        $evaluation = $gemini->evaluateAnswer($validated['question'], $validated['answer'], $category);
+
+        // Optionally record MockSession log if candidate user is authenticated
+        if ($request->user()) {
+            $catId = $validated['viva_category_id'] ?? VivaCategory::first()?->id ?? 1;
+
+            $session = MockSession::create([
+                'user_id' => $request->user()->id,
+                'viva_category_id' => $catId,
+                'transcript' => [
+                    ['speaker' => 'Chairman', 'text' => $validated['question']],
+                    ['speaker' => 'Candidate', 'text' => $validated['answer']]
+                ],
+                'viva_date' => now(),
+            ]);
+
+            SessionEvaluation::create([
+                'mock_session_id' => $session->id,
+                'score' => $evaluation['score'] ?? 80,
+                'filler_words_count' => $evaluation['fillers_detected'] ?? 2,
+                'feedback' => $evaluation['feedback'] ?? '',
+                'recommendations' => is_array($evaluation['recommendations'] ?? null)
+                    ? implode("\n", $evaluation['recommendations'])
+                    : ($evaluation['recommendations'] ?? ''),
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $evaluation
         ], 200);
     }
 }

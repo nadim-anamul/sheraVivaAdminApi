@@ -48,6 +48,10 @@ class BookingForm
                     ->maxLength(255)
                     ->placeholder('Auto-generated if left blank')
                     ->helperText('Secure WebRTC room code.'),
+                TextInput::make('meeting_code')
+                    ->maxLength(255)
+                    ->placeholder('Auto-generated if left blank')
+                    ->helperText('Google Meet-style unique code (e.g. vva-abcd-xyz).'),
                 TextInput::make('grade_score')
                     ->numeric()
                     ->placeholder('Post-viva score (e.g. 85)'),

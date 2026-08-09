@@ -11,9 +11,13 @@ use App\Models\Slot;
 use App\Models\Booking;
 use App\Models\MockSession;
 use App\Models\SessionEvaluation;
+use App\Models\QuestionBank;
+use App\Models\VivaAdvice;
+use App\Models\VivaRule;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -25,17 +29,22 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Seed System Admin User for Filament Dashboard login
-        $admin = User::create([
-            'name' => 'Admin Manager',
-            'email' => 'admin@seraviva.com',
-            'password' => Hash::make('password'),
-        ]);
+        $adminEmail = config('services.admin.email', 'admin@seraviva.com');
+        $adminPassword = config('services.admin.password', 'password');
+
+        $admin = User::updateOrCreate(
+            ['email' => $adminEmail],
+            [
+                'name' => 'Admin Manager',
+                'password' => $adminPassword,
+            ]
+        );
 
         // 2. Seed a Default Candidate User for Mobile App testing
         $candidate = User::create([
             'name' => 'Nadim Chowdhury',
             'email' => 'candidate@seraviva.com',
-            'password' => Hash::make('password'),
+            'password' => 'password',
         ]);
 
         // 3. Seed Viva Category configurations
@@ -182,6 +191,12 @@ class DatabaseSeeder extends Seeder
         $interviewerModels = [];
         foreach ($interviewers as $int) {
             $interviewerModels[] = Interviewer::create($int);
+            // Create user account for examiner login
+            User::create([
+                'name' => $int['name'],
+                'email' => $int['email'],
+                'password' => 'password',
+            ]);
         }
 
         // 6. Seed Availability Blocks (This automatically triggers Slot generation in model events!)
@@ -284,6 +299,94 @@ class DatabaseSeeder extends Seeder
                 'grade_score' => null, // Upcoming session, not graded yet!
                 'feedback_remarks' => null,
             ]);
+        }
+
+        // 9. Seed Question Banks from JSON files
+        $jsonBankDir = base_path('../shera-viva-json');
+        if (!File::isDirectory($jsonBankDir)) {
+            $jsonBankDir = '/home/nadim/braincraft/shera-viva-json';
+        }
+
+        $banks = [
+            'BCS' => 'bcs_viva_library.json',
+            'Bank' => 'bank_viva_library.json',
+            'Primary' => 'primary_viva_library.json',
+        ];
+
+        foreach ($banks as $examType => $fileName) {
+            $path = $jsonBankDir . '/' . $fileName;
+            if (File::exists($path)) {
+                $items = json_decode(File::get($path), true);
+                if (is_array($items)) {
+                    foreach ($items as $item) {
+                        QuestionBank::create([
+                            'item_id' => $item['id'] ?? null,
+                            'exam_type' => $item['examType'] ?? $examType,
+                            'title' => $item['title'] ?? ($examType . ' Viva Experience'),
+                            'edition' => $item['edition'] ?? null,
+                            'year' => $item['year'] ?? null,
+                            'candidate_name' => $item['candidateName'] ?? null,
+                            'subject' => $item['subject'] ?? null,
+                            'district' => $item['district'] ?? null,
+                            'upazila' => $item['upazila'] ?? null,
+                            'board' => $item['board'] ?? null,
+                            'choices' => $item['choices'] ?? [],
+                            'duration' => $item['duration'] ?? null,
+                            'result' => $item['result'] ?? null,
+                            'experience_rating' => $item['experienceRating'] ?? 'Good',
+                            'remarks' => $item['remarks'] ?? null,
+                            'transcript' => $item['transcript'] ?? [],
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // 10. Seed Viva Advice & Rules
+        $advicePath = $jsonBankDir . '/viva_advice.json';
+        if (File::exists($advicePath)) {
+            $advices = json_decode(File::get($advicePath), true);
+            if (is_array($advices)) {
+                foreach ($advices as $adv) {
+                    VivaAdvice::create([
+                        'title' => $adv['title'] ?? 'Viva Advice',
+                        'category' => $adv['category'] ?? 'general',
+                        'tips' => $adv['tips'] ?? [],
+                        'is_active' => true,
+                    ]);
+                }
+            }
+        }
+
+        $rulesPath = $jsonBankDir . '/viva_rules.json';
+        if (File::exists($rulesPath)) {
+            $rulesData = json_decode(File::get($rulesPath), true);
+            if (is_array($rulesData)) {
+                if (isset($rulesData['dos'])) {
+                    VivaRule::create([
+                        'title' => $rulesData['dos']['title'] ?? 'Do Rules',
+                        'category' => 'do',
+                        'rules' => $rulesData['dos']['rules'] ?? [],
+                        'is_active' => true,
+                    ]);
+                }
+                if (isset($rulesData['donts'])) {
+                    VivaRule::create([
+                        'title' => $rulesData['donts']['title'] ?? "Don't Rules",
+                        'category' => 'dont',
+                        'rules' => $rulesData['donts']['rules'] ?? [],
+                        'is_active' => true,
+                    ]);
+                }
+                if (isset($rulesData['generalTip'])) {
+                    VivaRule::create([
+                        'title' => $rulesData['generalTip']['title'] ?? "General Tip",
+                        'category' => 'general',
+                        'content' => $rulesData['generalTip']['content'] ?? null,
+                        'is_active' => true,
+                    ]);
+                }
+            }
         }
     }
 }

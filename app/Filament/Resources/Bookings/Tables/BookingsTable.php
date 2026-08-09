@@ -42,6 +42,10 @@ class BookingsTable
                     ->label('Room')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('meeting_code')
+                    ->label('Meeting Code')
+                    ->searchable()
+                    ->copyable(),
                 TextColumn::make('grade_score')
                     ->label('Score')
                     ->sortable()
