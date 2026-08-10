@@ -152,6 +152,8 @@ Endpoints requiring personal candidate history, video token generations, or inte
 ### Get Board Advice Guidelines
 *   **Route**: `GET /api/viva/advice`
 *   **Headers**: `X-Api-Key: <key>`
+*   **Query Parameters (Optional)**:
+    *   `category`: Filter by exam category (e.g. `?category=bcs`). If provided, returns matching exam advice AND generic `general` advice.
 *   **Response**: `200 OK`
     ```json
     {
@@ -159,9 +161,10 @@ Endpoints requiring personal candidate history, video token generations, or inte
         "data": [
             {
                 "id": 1,
-                "category": "dress_code",
+                "category": "general",
                 "title": "ভাইভা বোর্ডের পোশাক পরিচ্ছদ",
-                "content": "মার্জিত ও পরিষ্কার পোশাক পরা আবশ্যক..."
+                "content": "মার্জিত ও পরিষ্কার পোশাক পরা আবশ্যক...",
+                "tips": ["পুরুষদের জন্য ফুলহাতা শার্ট ও টাই", "নারীদের জন্য শালীন শাড়ি বা সালোয়ার কামিজ"]
             }
         ]
     }
@@ -170,6 +173,8 @@ Endpoints requiring personal candidate history, video token generations, or inte
 ### Get Board Rules & Regulations
 *   **Route**: `GET /api/viva/rules`
 *   **Headers**: `X-Api-Key: <key>`
+*   **Query Parameters (Optional)**:
+    *   `category`: Filter by exam category (e.g. `?category=bcs`). If provided, returns matching exam rules, exam-specific dos/donts, and generic dos/donts rules (`do`, `dont`, `general`).
 *   **Response**: `200 OK`
     ```json
     {
@@ -177,8 +182,10 @@ Endpoints requiring personal candidate history, video token generations, or inte
         "data": [
             {
                 "id": 1,
-                "rule_name": "আচরণবিধি",
-                "rule_description": "বোর্ডের প্রবেশ করার আগে অবশ্যই অনুমতি নিন..."
+                "title": "Do Rules",
+                "category": "do",
+                "content": null,
+                "rules": ["বোর্ডের প্রবেশ করার আগে অবশ্যই অনুমতি নিন...", "প্রশ্নের উত্তর মৃদুভাষায় দিন"]
             }
         ]
     }

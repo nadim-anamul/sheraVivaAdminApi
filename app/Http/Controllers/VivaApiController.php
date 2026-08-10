@@ -487,7 +487,17 @@ class VivaApiController extends Controller
      */
     public function getAdvice(Request $request): JsonResponse
     {
-        $advices = VivaAdvice::where('is_active', true)->get();
+        $query = VivaAdvice::where('is_active', true);
+
+        if ($request->has('category') && !empty($request->category)) {
+            $category = $request->category;
+            $query->where(function ($q) use ($category) {
+                $q->where('category', $category)
+                  ->orWhere('category', 'general');
+            });
+        }
+
+        $advices = $query->get();
 
         return response()->json([
             'status' => 'success',
@@ -500,7 +510,21 @@ class VivaApiController extends Controller
      */
     public function getRules(Request $request): JsonResponse
     {
-        $rules = VivaRule::where('is_active', true)->get();
+        $query = VivaRule::where('is_active', true);
+
+        if ($request->has('category') && !empty($request->category)) {
+            $category = $request->category;
+            $query->where(function ($q) use ($category) {
+                $q->where('category', $category)
+                  ->orWhere('category', 'general')
+                  ->orWhere('category', 'do')
+                  ->orWhere('category', 'dont')
+                  ->orWhere('category', $category . '_do')
+                  ->orWhere('category', $category . '_dont');
+            });
+        }
+
+        $rules = $query->get();
 
         return response()->json([
             'status' => 'success',
