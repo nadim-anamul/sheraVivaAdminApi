@@ -20,13 +20,28 @@ class JobUpdatesTable
                     ->searchable(),
                 TextColumn::make('organization')
                     ->searchable(),
+                TextColumn::make('vacancies')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('qualifications')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('file_url')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('file_size')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('published_date')
                     ->date()
                     ->sortable(),
+                TextColumn::make('application_deadline')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('description')
+                    ->limit(50)
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

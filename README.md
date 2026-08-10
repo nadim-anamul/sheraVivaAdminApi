@@ -10,6 +10,7 @@ Shera Viva is a state-of-the-art mock interview and job preparation backend. It 
 - **Google Meet-style Meeting Codes**: Automatic generation of unique random codes (e.g., `vva-abcd-xyz`) for booked time slots. Examiners and candidates can join directly from their respective dashboards or by typing the code.
 - **Filament Admin & Examiner Dashboards**: Dedicated admin dashboard for system managers and a custom "My Booked Vivas" portal for examiners to evaluate candidates post-interview.
 - **Automated Government Job Crawlers**: Rip-scrapers that crawl BPSC exams notices and Bangladesh Bank career portals in real-time, fetching new circular notices and result PDFs.
+- **AI-Powered Government Job Finder**: A custom Filament Page tool using Google Search Grounding to find live Bangladeshi government job circulars, complete with inline edits, manual PDF uploads, automatic PDF localizers/downloaders, and duplicate-entry protections.
 - **AI Speech Analytics Engine**: Fully integrated simulation engine evaluating speaking confidence, vocabulary quality, filler word usage (e.g. "basically", "um"), and providing custom recommendations.
 
 ---
@@ -117,10 +118,13 @@ Commit Transaction
 ## 🚀 Getting Started
 
 ### Prerequisites
-- PHP >= 8.3 with PDO, OpenSSL, and standard extensions.
+- PHP >= 8.2 with PDO, OpenSSL, and standard extensions.
 - MySQL or SQLite database.
 - Node.js & NPM (for frontend asset building).
 - LiveKit Server running locally or in staging (default: `http://localhost:7880`).
+
+### 📖 API Reference
+For mobile clients or frontend integrations, see the complete [API Documentation Guidelines](file:///home/nadim/braincraft/sheraVivaAdminApi/API_DOCUMENTATION.md).
 
 ### Installation
 1. Clone the project repository and copy the environment file:

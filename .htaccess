@@ -1,5 +1,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # If the browser literally requested /public/..., collapse to the clean URL.
+    # Uses THE_REQUEST so the internal rewrite below does not create a loop.
+    RewriteCond %{THE_REQUEST} \s/public/ [NC]
+    RewriteRule ^public/(.*)$ /$1 [R=301,L]
+
     RewriteRule ^$ public/ [L]
     RewriteRule (.*) public/$1 [L]
 </IfModule>

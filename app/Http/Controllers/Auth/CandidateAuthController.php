@@ -94,7 +94,7 @@ class CandidateAuthController extends Controller
      */
     protected function redirectUserBasedOnRole($user)
     {
-        if ($user->email === 'admin@seraviva.com') {
+        if ($user->email === config('services.admin.email', 'admin@seraviva.com')) {
             return redirect('/admin');
         }
 

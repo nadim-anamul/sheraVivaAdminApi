@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use Illuminate\Auth\Events\Attempting;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,26 +28,38 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Automatically sync admin user in DB with .env credentials during login attempts
-        \Illuminate\Support\Facades\Event::listen(
-            \Illuminate\Auth\Events\Attempting::class,
-            function (\Illuminate\Auth\Events\Attempting $event) {
-                $credentials = $event->credentials;
-                $adminEmail = config('services.admin.email');
-                $adminPassword = config('services.admin.password');
+        // Sync admin user from .env only when missing or password drifted.
+        // Avoid re-hashing on every attempt (breaks AuthenticateSession / remember cookies).
+        Event::listen(Attempting::class, function (Attempting $event): void {
+            $credentials = $event->credentials;
+            $adminEmail = config('services.admin.email');
+            $adminPassword = config('services.admin.password');
 
-                if ($adminEmail && $adminPassword && isset($credentials['email']) && $credentials['email'] === $adminEmail) {
-                    if (isset($credentials['password']) && $credentials['password'] === $adminPassword) {
-                        \App\Models\User::updateOrCreate(
-                            ['email' => $adminEmail],
-                            [
-                                'name' => 'Admin Manager',
-                                'password' => $adminPassword,
-                            ]
-                        );
-                    }
-                }
+            if (! $adminEmail || ! $adminPassword) {
+                return;
             }
-        );
+
+            if (($credentials['email'] ?? null) !== $adminEmail) {
+                return;
+            }
+
+            if (($credentials['password'] ?? null) !== $adminPassword) {
+                return;
+            }
+
+            $admin = User::query()->where('email', $adminEmail)->first();
+
+            if ($admin && Hash::check($adminPassword, $admin->password)) {
+                return;
+            }
+
+            User::query()->updateOrCreate(
+                ['email' => $adminEmail],
+                [
+                    'name' => 'Admin Manager',
+                    'password' => $adminPassword,
+                ]
+            );
+        });
     }
 }

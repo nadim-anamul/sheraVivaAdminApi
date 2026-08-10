@@ -129,6 +129,10 @@ Verify after the change:
    /usr/bin/php84 artisan config:cache
    /usr/bin/php84 artisan route:cache
    ```
+8. Create the public storage symbolic link to serve downloaded PDF circulars locally:
+   ```bash
+   /usr/bin/php84 artisan storage:link
+   ```
 
 > [!TIP]
 > **Permanent SSH Alias**:
@@ -166,19 +170,23 @@ To automatically trigger a redeployment on Hostinger whenever you push code chan
 
 ## Troubleshooting: Admin Login `ERR_TOO_MANY_REDIRECTS`
 
+Server-side, a clean request to `/admin/login` often returns **200** while Chrome still loops. That almost always means **sticky cookies** (`shera-viva-session` / remember-me) from an old session, not a bad `.env`.
+
 If `https://your-domain.com/admin/login` loops in the browser:
 
-1. Confirm document root ends in `/public` (Step 2b).
-2. Confirm `.env` has `APP_URL=https://your-domain.com` (no trailing slash) and `SESSION_SECURE_COOKIE=true`.
-3. Rebuild config cache:
+1. **Clear site cookies** for `your-domain.com` (Chrome → site settings → Cookies → delete), or open a **private/incognito** window. This alone usually fixes it immediately.
+2. Confirm document root ends in `/public` (Step 2b).
+3. Confirm `.env` has `APP_URL=https://your-domain.com` (no trailing slash) and `SESSION_SECURE_COOKIE=true`.
+4. Deploy latest code (proxy trust, `/public` URL collapse, Filament login hardening), then rebuild config cache:
    ```bash
    /usr/bin/php84 artisan config:clear
    /usr/bin/php84 artisan config:cache
+   /usr/bin/php84 artisan route:cache
    ```
-4. Clear cookies for the domain (or open a private window) and retry.
 5. Quick checks:
    ```bash
    curl -sI https://your-domain.com/admin/login
    curl -sI https://your-domain.com/admin/login/
+   curl -sI https://your-domain.com/public/admin/login
    ```
-   Login should return `200`. Trailing-slash should redirect to `/admin/login`, never `/public/admin/login`.
+   Login should return `200`. Trailing-slash should redirect to `/admin/login`. `/public/admin/login` should **301** to `/admin/login`.
