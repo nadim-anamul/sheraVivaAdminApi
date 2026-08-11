@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/viva/practice', [App\Http\Controllers\Candidate\PracticeController::class, 'showPracticePage'])->name('viva.practice');
     Route::get('/library', [App\Http\Controllers\Candidate\PracticeController::class, 'showLibraryPage'])->name('candidate.library');
     Route::get('/job-updates', [App\Http\Controllers\Candidate\PracticeController::class, 'showJobUpdatesPage'])->name('candidate.job_updates');
+    Route::get('/guidelines', [App\Http\Controllers\Candidate\PracticeController::class, 'showGuidelinesPage'])->name('candidate.guidelines');
     Route::get('/viva/join', [App\Http\Controllers\MeetingController::class, 'showJoinForm'])->name('viva.join.form');
     Route::post('/viva/join', [App\Http\Controllers\MeetingController::class, 'handleJoinForm'])->name('viva.join.handle');
     Route::get('/viva/meeting/{meeting_code}', [App\Http\Controllers\MeetingController::class, 'join'])->name('viva.meeting');

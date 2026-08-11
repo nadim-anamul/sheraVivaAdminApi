@@ -776,6 +776,72 @@
             background: rgba(17, 24, 39, 0.9);
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(9, 13, 26, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 520px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .type-badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .type-circular {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+        }
+        .type-result {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--primary-emerald);
+        }
+
         .job-details {
             flex: 1;
         }
@@ -1175,6 +1241,7 @@
                 <a href="#features">Features</a>
                 <a href="#experts">Expert Board Panel</a>
                 <a href="#jobs">Job Portal</a>
+                <a href="/guidelines">Viva Guidelines</a>
                 <a href="#app">Mobile App</a>
                 @auth
                     <a href="/dashboard" class="btn-primary">
@@ -1397,7 +1464,7 @@
                     </h3>
                     <div class="job-list" id="circular-list">
                         @forelse($circulars as $item)
-                            <div class="job-item search-target">
+                            <div class="job-item search-target" onclick="openJobModal({{ json_encode($item) }})" style="cursor: pointer;">
                                 <div class="job-details">
                                     <div class="job-org-row">
                                         <span class="job-badge">{{ $item->organization }}</span>
@@ -1408,8 +1475,8 @@
                                         <span><i class="fa-regular fa-file-pdf"></i> {{ $item->file_size }}</span>
                                     </div>
                                 </div>
-                                <a href="{{ $item->file_url }}" target="_blank" class="job-download-btn" title="Download Notice PDF">
-                                    <i class="fa-solid fa-download"></i>
+                                <a href="javascript:void(0)" class="job-download-btn" title="View Details">
+                                    <i class="fa-solid fa-eye"></i>
                                 </a>
                             </div>
                         @empty
@@ -1425,7 +1492,7 @@
                     </h3>
                     <div class="job-list" id="result-list">
                         @forelse($results as $item)
-                            <div class="job-item is-result search-target">
+                            <div class="job-item is-result search-target" onclick="openJobModal({{ json_encode($item) }})" style="cursor: pointer;">
                                 <div class="job-details">
                                     <div class="job-org-row">
                                         <span class="job-badge" style="background: rgba(59, 130, 246, 0.1); color: var(--accent-blue);">{{ $item->organization }}</span>
@@ -1436,8 +1503,8 @@
                                         <span><i class="fa-regular fa-file-pdf"></i> {{ $item->file_size }}</span>
                                     </div>
                                 </div>
-                                <a href="{{ $item->file_url }}" target="_blank" class="job-download-btn" title="Download Results PDF">
-                                    <i class="fa-solid fa-file-arrow-down"></i>
+                                <a href="javascript:void(0)" class="job-download-btn" title="View Details">
+                                    <i class="fa-solid fa-eye"></i>
                                 </a>
                             </div>
                         @empty
@@ -1660,6 +1727,90 @@
             `;
             step = 1;
         }
+
+        // Job details modal handlers
+        function openJobModal(job) {
+            document.getElementById('modal-badge').innerText = job.organization;
+            
+            const typeBadge = document.getElementById('modal-type');
+            typeBadge.innerText = job.type === 'circular' ? 'Circular' : 'Result';
+            typeBadge.className = job.type === 'circular' ? 'type-badge type-circular' : 'type-badge type-result';
+            
+            document.getElementById('modal-title').innerText = job.title;
+            document.getElementById('modal-description').innerText = job.description || 'No description summary details provided.';
+            document.getElementById('modal-vacancies').innerText = job.vacancies || 'N/A';
+            document.getElementById('modal-qualifications').innerText = job.qualifications || 'N/A';
+            
+            // Format published date
+            if (job.published_date) {
+                const pubDate = new Date(job.published_date);
+                document.getElementById('modal-published').innerText = pubDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } else {
+                document.getElementById('modal-published').innerText = 'N/A';
+            }
+            
+            // Format application deadline
+            const deadlineEl = document.getElementById('modal-deadline');
+            if (job.application_deadline) {
+                const deadDate = new Date(job.application_deadline);
+                deadlineEl.innerText = deadDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                deadlineEl.style.color = 'var(--primary-emerald)';
+            } else {
+                deadlineEl.innerText = 'N/A';
+                deadlineEl.style.color = 'var(--text-muted)';
+            }
+            
+            const downloadBtn = document.getElementById('modal-download-link');
+            if (job.file_url) {
+                downloadBtn.href = job.file_url;
+                downloadBtn.style.display = 'flex';
+            } else {
+                downloadBtn.style.display = 'none';
+            }
+            
+            document.getElementById('job-modal').classList.add('active');
+        }
+
+        function closeJobModal(e) {
+            document.getElementById('job-modal').classList.remove('active');
+        }
     </script>
+
+    <!-- Job Details Modal Overlay -->
+    <div id="job-modal" class="modal-overlay" onclick="closeJobModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeJobModal(event)"><i class="fa-solid fa-xmark"></i></button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span id="modal-badge" class="job-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--primary-emerald); font-weight: 700; font-size: 11px;">BPSC</span>
+                <span id="modal-type" class="type-badge">Circular</span>
+            </div>
+            <h3 id="modal-title" style="font-family: var(--font-display); font-size: 18px; font-weight: 800; color: #fff; margin: 16px 0 12px 0; line-height: 1.45;">Job Title</h3>
+            
+            <p id="modal-description" style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.55; border-bottom: 1px solid var(--border-glow); padding-bottom: 16px; min-height: 40px;">Job Description Summary...</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Vacancies</div>
+                    <div id="modal-vacancies" style="font-size: 13px; font-weight: 600; color: #fff; margin-top: 3px;">1026 posts</div>
+                </div>
+                <div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Qualifications</div>
+                    <div id="modal-qualifications" style="font-size: 13px; font-weight: 600; color: #fff; margin-top: 3px;">Graduation</div>
+                </div>
+                <div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Published Date</div>
+                    <div id="modal-published" style="font-size: 13px; font-weight: 600; color: #fff; margin-top: 3px;">Aug 10, 2026</div>
+                </div>
+                <div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Application Deadline</div>
+                    <div id="modal-deadline" style="font-size: 13px; font-weight: 600; color: var(--accent-blue); margin-top: 3px;">Aug 30, 2026</div>
+                </div>
+            </div>
+            
+            <a id="modal-download-link" href="#" target="_blank" class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; text-decoration: none;">
+                <i class="fa-solid fa-download"></i> Download / View PDF Notice
+            </a>
+        </div>
+    </div>
 </body>
 </html>

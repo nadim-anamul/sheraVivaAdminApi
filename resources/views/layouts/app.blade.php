@@ -291,6 +291,7 @@
                     <a href="/viva/practice" style="color: var(--primary-emerald); font-weight: 700;"><i class="fa-solid fa-robot"></i> Practice AI Viva</a>
                     <a href="/library">Question Library</a>
                     <a href="/job-updates">Job Updates</a>
+                    <a href="/guidelines">Viva Guidelines</a>
                     <form action="/logout" method="POST" style="display: inline;">
                         @csrf
                         <button type="submit" class="btn-secondary" style="padding: 6px 14px; font-size: 12px;">
@@ -300,6 +301,7 @@
                 @else
                     <a href="/library">Question Library</a>
                     <a href="/job-updates">Job Updates</a>
+                    <a href="/guidelines">Viva Guidelines</a>
                     <a href="/login" class="btn-secondary">Log in</a>
                     <a href="/register" class="btn-primary">Get Started</a>
                 @endauth

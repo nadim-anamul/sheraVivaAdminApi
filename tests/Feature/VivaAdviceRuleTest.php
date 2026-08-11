@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\VivaAdvice;
 use App\Models\VivaRule;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -112,5 +113,22 @@ class VivaAdviceRuleTest extends TestCase
         $this->assertContains('Do Rule General', $titles);
         $this->assertContains('BCS Rule', $titles);
         $this->assertNotContains('Bank Rule', $titles);
+    }
+
+    /**
+     * Test guidelines page is accessible to authenticated candidates.
+     */
+    public function test_guidelines_page_is_accessible_to_authenticated_candidates(): void
+    {
+        $user = User::create([
+            'name' => 'Test User',
+            'email' => 'test@seraviva.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get('/guidelines');
+        $response->assertStatus(200);
     }
 }

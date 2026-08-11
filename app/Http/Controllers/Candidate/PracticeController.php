@@ -47,4 +47,32 @@ class PracticeController extends Controller
 
         return view('candidate.job_updates', compact('circulars', 'results'));
     }
+
+    public function showGuidelinesPage(Request $request)
+    {
+        $examType = $request->query('exam_type', 'all');
+
+        $adviceQuery = \App\Models\VivaAdvice::where('is_active', true);
+        $rulesQuery = \App\Models\VivaRule::where('is_active', true);
+
+        if ($examType !== 'all') {
+            $adviceQuery->where(function ($q) use ($examType) {
+                $q->where('category', $examType)
+                  ->orWhere('category', 'general');
+            });
+            $rulesQuery->where(function ($q) use ($examType) {
+                $q->where('category', $examType)
+                  ->orWhere('category', 'general')
+                  ->orWhere('category', 'do')
+                  ->orWhere('category', 'dont')
+                  ->orWhere('category', $examType . '_do')
+                  ->orWhere('category', $examType . '_dont');
+            });
+        }
+
+        $advices = $adviceQuery->get();
+        $rules = $rulesQuery->get();
+
+        return view('candidate.guidelines', compact('advices', 'rules', 'examType'));
+    }
 }
