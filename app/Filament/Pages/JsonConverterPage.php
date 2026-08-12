@@ -53,6 +53,11 @@ class JsonConverterPage extends Page
         $this->isProcessing = true;
         $this->totalFileCount = $totalFiles;
         $this->processedFileCount = 0;
+
+        // Clear session buffers
+        session()->forget('json_converter_accumulated');
+        session()->forget('json_converter_logs');
+
         $this->processingLog = [];
         $this->accumulatedItems = [];
         $this->convertedJson = '';
@@ -76,7 +81,13 @@ class JsonConverterPage extends Page
             $mimeType = $this->singleFile->getMimeType() ?: 'application/pdf';
             $fileName = $this->singleFile->getClientOriginalName();
 
-            $this->processingLog[] = "File {$currentIndex}/{$totalCount} [{$fileName}]: Extracting with Gemini 3.5 Flash...";
+            // Track logs in session to prevent payload bloat
+            $sessionLogs = session()->get('json_converter_logs', []);
+            $sessionLogs[] = "File {$currentIndex}/{$totalCount} [{$fileName}]: Extracting with Gemini 3.5 Flash...";
+            session()->put('json_converter_logs', $sessionLogs);
+
+            // Display only the last 5 logs during active processing to keep Livewire request footprint tiny
+            $this->processingLog = array_slice($sessionLogs, -5);
 
             $parsedItems = $gemini->convertFileToJson($path, $mimeType, $this->examType);
 
@@ -112,7 +123,11 @@ class JsonConverterPage extends Page
             }
 
             $itemsInFile = count($parsedItems);
-            $this->accumulatedItems = array_merge($this->accumulatedItems, $parsedItems);
+
+            // Save items in session instead of public property
+            $sessionItems = session()->get('json_converter_accumulated', []);
+            $sessionItems = array_merge($sessionItems, $parsedItems);
+            session()->put('json_converter_accumulated', $sessionItems);
 
             if ($this->autoSaveToDb) {
                 foreach ($parsedItems as $item) {
@@ -138,20 +153,38 @@ class JsonConverterPage extends Page
             }
 
             $this->processedFileCount++;
-            $this->processingLog[] = "File {$currentIndex}/{$totalCount} [{$fileName}]: Successfully extracted {$itemsInFile} items & saved in DB.";
+
+            $sessionLogs = session()->get('json_converter_logs', []);
+            $sessionLogs[] = "File {$currentIndex}/{$totalCount} [{$fileName}]: Successfully extracted {$itemsInFile} items & saved in DB.";
+            session()->put('json_converter_logs', $sessionLogs);
 
             if ($this->processedFileCount >= $totalCount) {
                 $this->isProcessing = false;
-                $this->itemsCount = count($this->accumulatedItems);
-                $this->convertedJson = json_encode($this->accumulatedItems, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+                // Load all items and complete logs ONLY on final batch completion request
+                $allAccumulated = session()->get('json_converter_accumulated', []);
+                $this->accumulatedItems = $allAccumulated;
+                $this->itemsCount = count($allAccumulated);
+                $this->convertedJson = json_encode($allAccumulated, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+                $this->processingLog = session()->get('json_converter_logs', []);
                 $this->statusMessage = "BATCH COMPLETE! Processed {$this->processedFileCount} files, generated {$this->itemsCount} viva Q&A items, and stored all records into {$this->examType} Question Bank Database!";
+
+                // Flush session buffers
+                session()->forget('json_converter_accumulated');
+                session()->forget('json_converter_logs');
             } else {
+                $this->processingLog = array_slice($sessionLogs, -5);
                 $this->statusMessage = "Processed {$this->processedFileCount} of {$totalCount} files...";
             }
 
             $this->singleFile = null;
         } catch (\Exception $e) {
-            $this->processingLog[] = "File {$currentIndex}/{$totalCount}: Error - ".$e->getMessage();
+            $sessionLogs = session()->get('json_converter_logs', []);
+            $sessionLogs[] = "File {$currentIndex}/{$totalCount}: Error - ".$e->getMessage();
+            session()->put('json_converter_logs', $sessionLogs);
+
+            $this->processingLog = array_slice($sessionLogs, -5);
             $this->singleFile = null;
         }
     }
