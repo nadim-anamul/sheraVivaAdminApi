@@ -32,6 +32,14 @@ class GeminiAiService
      */
     public function convertFileToJson(string $filePath, string $mimeType = 'application/pdf', string $examType = 'BCS'): array
     {
+        // For PDF files, try to extract text locally first to save API latency, bandwidth, and input token counts
+        if ($mimeType === 'application/pdf' || str_ends_with(strtolower($filePath), '.pdf')) {
+            $pdfText = $this->extractTextFromPdf($filePath);
+            if (!empty($pdfText)) {
+                return $this->convertDocToJson($pdfText, $examType);
+            }
+        }
+
         // For DOCX files, extract text locally first as Gemini does not natively support DOCX base64 OLE archives
         if ($mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
             str_ends_with(strtolower($filePath), '.docx') ||
@@ -576,5 +584,22 @@ PROMPT;
         }
 
         return null;
+    }
+
+    /**
+     * Extract raw text from a PDF file using pdftotext CLI utility.
+     */
+    public function extractTextFromPdf(string $filePath): ?string
+    {
+        try {
+            $escapedPath = escapeshellarg($filePath);
+            $text = shell_exec("pdftotext {$escapedPath} -");
+
+            return $text ? trim($text) : null;
+        } catch (\Exception $e) {
+            Log::error("Local PDF extraction failed for {$filePath}: ".$e->getMessage());
+
+            return null;
+        }
     }
 }

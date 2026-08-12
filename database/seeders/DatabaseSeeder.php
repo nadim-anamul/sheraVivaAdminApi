@@ -385,5 +385,53 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        // 11. Seed Additional Candidates and Bookings to populate Admin Dashboard nicely
+        $fakeCandidates = [
+            ['name' => 'Fahim Ahmed', 'email' => 'fahim@example.com'],
+            ['name' => 'Tasnim Rahman', 'email' => 'tasnim@example.com'],
+            ['name' => 'Arifur Rahman', 'email' => 'arif@example.com'],
+            ['name' => 'Sultana Razia', 'email' => 'sultana@example.com'],
+            ['name' => 'Mehedi Hasan', 'email' => 'mehedi@example.com'],
+            ['name' => 'Anika Tabassum', 'email' => 'anika@example.com'],
+            ['name' => 'Zubair Hossain', 'email' => 'zubair@example.com'],
+            ['name' => 'Rashedul Islam', 'email' => 'rashed@example.com'],
+        ];
+
+        $candidateModels = [$candidate];
+        foreach ($fakeCandidates as $fc) {
+            $candidateModels[] = User::create([
+                'name' => $fc['name'],
+                'email' => $fc['email'],
+                'password' => bcrypt('password'),
+            ]);
+        }
+
+        // Get slots and seed multiple bookings
+        $availableSlots = Slot::where('status', 'available')->get();
+        $paymentStatuses = ['success', 'success', 'success', 'pending'];
+        $trxCounter = 100;
+
+        foreach ($availableSlots as $index => $slot) {
+            // Seed bookings for first 8 slots to show beautiful data
+            if ($index >= 8) {
+                break;
+            }
+
+            $assignedCandidate = $candidateModels[($index + 1) % count($candidateModels)];
+            $slot->update(['status' => 'booked']);
+
+            Booking::create([
+                'slot_id' => $slot->id,
+                'candidate_id' => $assignedCandidate->id,
+                'interviewer_id' => $slot->interviewer_id,
+                'amount_paid' => $slot->interviewer->base_price,
+                'payment_status' => $paymentStatuses[$index % count($paymentStatuses)],
+                'payment_trx_id' => 'TRX_SEED_BKASH_'.($trxCounter++),
+                'livekit_room_name' => 'viva_room_'.uniqid(),
+                'grade_score' => $index % 3 === 0 ? null : rand(75, 92), // some graded, some upcoming!
+                'feedback_remarks' => $index % 3 === 0 ? null : 'Good communication skills, focus on key domain concepts.',
+            ]);
+        }
     }
 }
