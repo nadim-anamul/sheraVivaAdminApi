@@ -1,8 +1,3 @@
-@extends('layouts.app')
-
-@section('title', 'Sign In | Shera Viva Admin Panel')
-
-@section('content')
 <div class="auth-card">
     <h2>Admin & Examiner Portal</h2>
     <p class="subtitle">Enter your credentials to access the examiner dashboards and database.</p>
@@ -21,4 +16,3 @@
         </button>
     </form>
 </div>
-@endsection

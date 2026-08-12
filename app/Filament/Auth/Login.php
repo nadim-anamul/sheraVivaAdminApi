@@ -6,6 +6,7 @@ use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Auth\SessionGuard;
+use Illuminate\Contracts\View\View;
 
 /**
  * Break Hostinger/browser redirect loops caused by a sticky session or remember
@@ -42,5 +43,12 @@ class Login extends BaseLogin
         }
 
         $this->form->fill();
+    }
+
+    public function render(): View
+    {
+        return view($this->getView(), $this->getViewData())
+            ->layout('layouts.app')
+            ->section('content');
     }
 }

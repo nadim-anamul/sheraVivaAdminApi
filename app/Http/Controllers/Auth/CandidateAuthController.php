@@ -92,6 +92,18 @@ class CandidateAuthController extends Controller
     }
 
     /**
+     * Show Admin & Examiner Login Form.
+     */
+    public function showAdminLogin()
+    {
+        if (Auth::check()) {
+            return $this->redirectUserBasedOnRole(Auth::user());
+        }
+
+        return view('auth.admin_login');
+    }
+
+    /**
      * Smart redirect handler based on user identity.
      */
     protected function redirectUserBasedOnRole($user)

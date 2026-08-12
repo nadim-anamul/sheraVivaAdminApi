@@ -35,6 +35,10 @@ Route::get('/register', [CandidateAuthController::class, 'showRegister'])->name(
 Route::post('/register', [CandidateAuthController::class, 'register']);
 Route::post('/logout', [CandidateAuthController::class, 'logout'])->name('logout');
 
+// Filament Admin & Examiner Override Authentication Routes
+Route::get('admin/login', [CandidateAuthController::class, 'showAdminLogin'])->name('filament.admin.auth.login');
+Route::get('examiner/login', [CandidateAuthController::class, 'showAdminLogin'])->name('filament.examiner.auth.login');
+
 // Candidate Dashboard & Features Routes (Protected)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
