@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\QuestionBank;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Smalot\PdfParser\Parser;
 
 class GeminiAiService
 {
@@ -587,17 +588,27 @@ PROMPT;
     }
 
     /**
-     * Extract raw text from a PDF file using pdftotext CLI utility.
+     * Extract raw text from a PDF file using Smalot PDF Parser with a pdftotext system fallback.
      */
     public function extractTextFromPdf(string $filePath): ?string
     {
         try {
-            $escapedPath = escapeshellarg($filePath);
-            $text = shell_exec("pdftotext {$escapedPath} -");
+            $parser = new Parser;
+            $pdf = $parser->parseFile($filePath);
+            $text = $pdf->getText();
 
             return $text ? trim($text) : null;
         } catch (\Exception $e) {
-            Log::error("Local PDF extraction failed for {$filePath}: ".$e->getMessage());
+            Log::warning("Local PDF parsing via Smalot failed for {$filePath}, attempting system pdftotext: ".$e->getMessage());
+
+            try {
+                $escapedPath = escapeshellarg($filePath);
+                $text = shell_exec("pdftotext {$escapedPath} -");
+
+                return $text ? trim($text) : null;
+            } catch (\Exception $subException) {
+                Log::error('System pdftotext fallback failed: '.$subException->getMessage());
+            }
 
             return null;
         }
