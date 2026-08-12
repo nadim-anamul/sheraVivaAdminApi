@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Candidate;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -24,11 +24,11 @@ class DashboardController extends Controller
 
         // Calculate statistics
         $totalBookings = $bookings->count();
-        
+
         $completedVivas = $bookings->filter(function ($b) {
             return $b->payment_status === 'success' && $b->grade_score !== null;
         });
-        
+
         $completedCount = $completedVivas->count();
         $averageScore = $completedCount > 0 ? round($completedVivas->avg('grade_score')) : null;
 
@@ -38,7 +38,8 @@ class DashboardController extends Controller
                 return false;
             }
             $date = $b->slot->availabilityBlock->date?->format('Y-m-d');
-            $dateTime = \Carbon\Carbon::parse($date . ' ' . $b->slot->start_time);
+            $dateTime = Carbon::parse($date.' '.$b->slot->start_time);
+
             return $dateTime->isFuture();
         })->first();
 

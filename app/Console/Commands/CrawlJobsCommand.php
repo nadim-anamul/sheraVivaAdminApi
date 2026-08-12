@@ -3,12 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Models\JobUpdate;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
-use Carbon\Carbon;
-use Exception;
 
 class CrawlJobsCommand extends Command
 {
@@ -37,16 +37,16 @@ class CrawlJobsCommand extends Command
         try {
             $this->crawlBpsc();
         } catch (Exception $e) {
-            $this->error('BPSC Scraper error: ' . $e->getMessage());
-            Log::error('BPSC Scraper failed: ' . $e->getMessage());
+            $this->error('BPSC Scraper error: '.$e->getMessage());
+            Log::error('BPSC Scraper failed: '.$e->getMessage());
         }
 
         // 2. Scrape Bangladesh Bank
         try {
             $this->crawlBangladeshBank();
         } catch (Exception $e) {
-            $this->error('Bangladesh Bank Scraper error: ' . $e->getMessage());
-            Log::error('Bangladesh Bank Scraper failed: ' . $e->getMessage());
+            $this->error('Bangladesh Bank Scraper error: '.$e->getMessage());
+            Log::error('Bangladesh Bank Scraper failed: '.$e->getMessage());
         }
 
         $this->info('Job search crawlers execution completed.');
@@ -61,11 +61,12 @@ class CrawlJobsCommand extends Command
         $url = 'https://bpsc.gov.bd/pages/psc-exams?page=1&page_size=10';
 
         $response = Http::withHeaders([
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         ])->get($url);
 
         if (!$response->successful()) {
-            $this->error('Failed to fetch BPSC page. Status: ' . $response->status());
+            $this->error('Failed to fetch BPSC page. Status: '.$response->status());
+
             return;
         }
 
@@ -77,6 +78,7 @@ class CrawlJobsCommand extends Command
 
         if ($rows->count() === 0) {
             $this->warn('No notice rows found on BPSC page. Table layout may have changed.');
+
             return;
         }
 
@@ -100,7 +102,7 @@ class CrawlJobsCommand extends Command
 
                 $title = trim($titleCell->text());
                 $fileUrl = trim($pdfCell->attr('href'));
-                
+
                 // Parse date
                 $rawDate = $dateCell->count() > 0 ? trim($dateCell->text()) : '';
                 $publishedDate = $this->parseDate($rawDate);
@@ -133,7 +135,7 @@ class CrawlJobsCommand extends Command
                     $this->info("Imported BPSC item: $title");
                 }
             } catch (Exception $ex) {
-                $this->error('Error parsing row: ' . $ex->getMessage());
+                $this->error('Error parsing row: '.$ex->getMessage());
             }
         });
 
@@ -149,11 +151,12 @@ class CrawlJobsCommand extends Command
         $url = 'https://erecruitment.bb.org.bd/career/jobopportunity.php';
 
         $response = Http::withHeaders([
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         ])->get($url);
 
         if (!$response->successful()) {
-            $this->error('Failed to connect to Bangladesh Bank portal. Status: ' . $response->status());
+            $this->error('Failed to connect to Bangladesh Bank portal. Status: '.$response->status());
+
             return;
         }
 
@@ -164,16 +167,18 @@ class CrawlJobsCommand extends Command
             $this->warn('Bangladesh Bank e-recruitment portal has requested CAPTCHA solving. Crawling paused.');
             $this->line('Safe Fallback: Filament Admin panel supports full manual entries. Automated system skipped successfully.');
             Log::warning('Bangladesh Bank Scraper blocked by CAPTCHA request. Skipping automated crawl for this run.');
+
             return;
         }
 
         $crawler = new Crawler($html);
-        
+
         // Target all table rows
         $rows = $crawler->filter('table tr');
 
         if ($rows->count() === 0) {
             $this->warn('No table rows found on Bangladesh Bank e-recruitment page.');
+
             return;
         }
 
@@ -199,7 +204,7 @@ class CrawlJobsCommand extends Command
 
                 // Resolve relative links to absolute URLs
                 if (!str_starts_with($fileUrl, 'http')) {
-                    $fileUrl = 'https://erecruitment.bb.org.bd' . (str_starts_with($fileUrl, '/') ? '' : '/') . $fileUrl;
+                    $fileUrl = 'https://erecruitment.bb.org.bd'.(str_starts_with($fileUrl, '/') ? '' : '/').$fileUrl;
                 }
 
                 // Parse Date from Column 5 (index 4)
@@ -224,7 +229,7 @@ class CrawlJobsCommand extends Command
                     $this->info("Imported Bangladesh Bank circular: $title");
                 }
             } catch (Exception $ex) {
-                $this->error('Error parsing Bangladesh Bank row: ' . $ex->getMessage());
+                $this->error('Error parsing Bangladesh Bank row: '.$ex->getMessage());
             }
         });
 

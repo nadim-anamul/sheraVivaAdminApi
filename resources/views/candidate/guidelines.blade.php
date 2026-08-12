@@ -3,68 +3,68 @@
 @section('title', 'Viva Preparation Guidelines & Rules | Shera Viva')
 
 @section('content')
-<div class="guidelines-container" style="max-width: 1100px; margin: 0 auto; padding-bottom: 50px;">
+<div class="max-w-[1100px] mx-auto pb-12">
     
     <!-- Guidelines Header -->
-    <div class="header-card" style="background: rgba(17, 24, 39, 0.6); border: 1px solid var(--border-glow); padding: 30px; border-radius: 16px; margin-bottom: 30px; text-align: center; backdrop-filter: blur(10px);">
-        <i class="fa-solid fa-book-open-reader" style="font-size: 48px; color: var(--primary-emerald); margin-bottom: 16px;"></i>
-        <h1 style="font-family: var(--font-display); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 10px;">Viva Guidelines & Rules</h1>
-        <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto; font-size: 14px; line-height: 1.5;">
+    <div class="bg-[#111827]/60 border border-border-glow p-8 rounded-2xl mb-8 text-center backdrop-blur-md">
+        <i class="fa-solid fa-book-open-reader text-5xl text-primary-emerald mb-4"></i>
+        <h1 class="font-display text-2xl lg:text-3xl font-extrabold text-white mb-2.5">Viva Guidelines & Rules</h1>
+        <p class="text-text-muted max-w-[600px] mx-auto text-sm leading-relaxed">
             Master your oral board behavior, dress codes, guidelines, and behavioral Do's & Don'ts tailored for every government exam board in Bangladesh.
         </p>
     </div>
 
     <!-- Exam Type Tabs Filter -->
-    <div class="tabs-container" style="display: flex; justify-content: center; gap: 12px; margin-bottom: 36px; flex-wrap: wrap;">
+    <div class="flex justify-center gap-3 mb-9 flex-wrap">
         <a href="/guidelines?exam_type=all" 
-           style="text-decoration: none; padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 13px; transition: all 0.2s; border: 1px solid {{ $examType === 'all' ? 'var(--primary-emerald)' : 'var(--border-glow)' }}; background: {{ $examType === 'all' ? 'var(--primary-emerald)' : 'rgba(255, 255, 255, 0.03)' }}; color: #fff;">
+           class="text-xs lg:text-sm font-semibold py-2.5 px-5 rounded-full border transition-all duration-200 no-underline {{ $examType === 'all' ? 'bg-primary-emerald border-primary-emerald text-white shadow-md' : 'bg-white/3 border-border-glow text-white hover:bg-white/5 hover:border-white/12' }}">
             <i class="fa-solid fa-list"></i> All Guidelines
         </a>
         <a href="/guidelines?exam_type=bcs" 
-           style="text-decoration: none; padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 13px; transition: all 0.2s; border: 1px solid {{ $examType === 'bcs' ? 'var(--primary-emerald)' : 'var(--border-glow)' }}; background: {{ $examType === 'bcs' ? 'var(--primary-emerald)' : 'rgba(255, 255, 255, 0.03)' }}; color: #fff;">
+           class="text-xs lg:text-sm font-semibold py-2.5 px-5 rounded-full border transition-all duration-200 no-underline {{ $examType === 'bcs' ? 'bg-primary-emerald border-primary-emerald text-white shadow-md' : 'bg-white/3 border-border-glow text-white hover:bg-white/5 hover:border-white/12' }}">
             <i class="fa-solid fa-gavel"></i> BCS Exams
         </a>
         <a href="/guidelines?exam_type=bank" 
-           style="text-decoration: none; padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 13px; transition: all 0.2s; border: 1px solid {{ $examType === 'bank' ? 'var(--primary-emerald)' : 'var(--border-glow)' }}; background: {{ $examType === 'bank' ? 'var(--primary-emerald)' : 'rgba(255, 255, 255, 0.03)' }}; color: #fff;">
+           class="text-xs lg:text-sm font-semibold py-2.5 px-5 rounded-full border transition-all duration-200 no-underline {{ $examType === 'bank' ? 'bg-primary-emerald border-primary-emerald text-white shadow-md' : 'bg-white/3 border-border-glow text-white hover:bg-white/5 hover:border-white/12' }}">
             <i class="fa-solid fa-building-columns"></i> Bank Exams
         </a>
         <a href="/guidelines?exam_type=primary" 
-           style="text-decoration: none; padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 13px; transition: all 0.2s; border: 1px solid {{ $examType === 'primary' ? 'var(--primary-emerald)' : 'var(--border-glow)' }}; background: {{ $examType === 'primary' ? 'var(--primary-emerald)' : 'rgba(255, 255, 255, 0.03)' }}; color: #fff;">
+           class="text-xs lg:text-sm font-semibold py-2.5 px-5 rounded-full border transition-all duration-200 no-underline {{ $examType === 'primary' ? 'bg-primary-emerald border-primary-emerald text-white shadow-md' : 'bg-white/3 border-border-glow text-white hover:bg-white/5 hover:border-white/12' }}">
             <i class="fa-solid fa-graduation-cap"></i> Primary Teacher Exams
         </a>
     </div>
 
     <!-- Main Content Layout Grid -->
-    <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 30px;" class="guidelines-grid">
+    <div class="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-8">
         
         <!-- Left Side: Viva Advice -->
         <div>
-            <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-lightbulb" style="color: #F59E0B;"></i> Board Expert Advice
+            <h2 class="font-display text-lg lg:text-xl font-bold text-white mb-5 flex items-center gap-2.5">
+                <i class="fa-solid fa-lightbulb text-accent-orange"></i> Board Expert Advice
             </h2>
             
             @forelse($advices as $adv)
-                <div style="background: rgba(17, 24, 39, 0.7); border: 1px solid var(--border-glow); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                        <h3 style="font-size: 16px; font-weight: 700; color: #fff;">{{ $adv->title }}</h3>
-                        <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; background: rgba(59, 130, 246, 0.15); color: #3B82F6;">
+                <div class="bg-[#111827]/70 border border-border-glow rounded-xl p-6 mb-5 backdrop-blur-sm">
+                    <div class="flex justify-between items-start mb-3 gap-3">
+                        <h3 class="text-base font-bold text-white">{{ $adv->title }}</h3>
+                        <span class="text-[9px] font-extrabold uppercase py-1 px-2.5 rounded-full bg-accent-blue/15 text-accent-blue border border-accent-blue/20 tracking-wider shrink-0">
                             {{ $adv->category }}
                         </span>
                     </div>
                     
                     @if(!empty($adv->content))
-                        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                        <p class="text-xs lg:text-sm text-text-muted leading-relaxed mb-4">
                             {{ $adv->content }}
                         </p>
                     @endif
 
                     @if(!empty($adv->tips) && is_array($adv->tips))
-                        <div style="background: rgba(255, 255, 255, 0.02); border-left: 3px solid var(--primary-emerald); padding: 12px 16px; border-radius: 0 8px 8px 0;">
-                            <h4 style="font-size: 12px; font-weight: 700; color: var(--primary-emerald); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Key Tips</h4>
-                            <ul style="list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 6px;">
+                        <div class="bg-white/2 border-l-3 border-l-primary-emerald py-3 px-4 rounded-r-lg">
+                            <h4 class="text-xs font-bold text-primary-emerald mb-2 uppercase tracking-wide">Key Tips</h4>
+                            <ul class="list-none pl-0 flex flex-col gap-2 mb-0">
                                 @foreach($adv->tips as $tip)
-                                    <li style="font-size: 12px; color: var(--text-main); display: flex; align-items: flex-start; gap: 8px; line-height: 1.45;">
-                                        <i class="fa-solid fa-check" style="color: var(--primary-emerald); font-size: 10px; margin-top: 3px;"></i>
+                                    <li class="text-xs lg:text-sm text-text-main flex items-start gap-2 leading-snug">
+                                        <i class="fa-solid fa-check text-primary-emerald text-[10px] mt-1 shrink-0"></i>
                                         <span>{{ $tip }}</span>
                                     </li>
                                 @endforeach
@@ -73,17 +73,17 @@
                     @endif
                 </div>
             @empty
-                <div style="background: rgba(17, 24, 39, 0.3); border: 1px dashed var(--border-glow); border-radius: 12px; padding: 40px; text-align: center; color: var(--text-muted);">
-                    <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 12px;"></i>
-                    <p style="font-size: 13px;">No advice guidelines found for this exam type.</p>
+                <div class="bg-[#111827]/30 border border-dashed border-border-glow rounded-xl p-10 text-center text-text-muted">
+                    <i class="fa-solid fa-folder-open text-3xl mb-3"></i>
+                    <p class="text-xs">No advice guidelines found for this exam type.</p>
                 </div>
             @endforelse
         </div>
 
         <!-- Right Side: Viva Rules (Do's & Don'ts) -->
         <div>
-            <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary-emerald);"></i> Board Rules, Do's & Don'ts
+            <h2 class="font-display text-lg lg:text-xl font-bold text-white mb-5 flex items-center gap-2.5">
+                <i class="fa-solid fa-shield-halved text-primary-emerald"></i> Board Rules, Do's & Don'ts
             </h2>
 
             @forelse($rules as $rule)
@@ -91,43 +91,43 @@
                     $isDont = str_contains($rule->category, 'dont') || str_contains($rule->category, 'donts');
                     $isDo = str_contains($rule->category, 'do') && !$isDont;
                     
-                    $borderColor = 'var(--border-glow)';
-                    $accentColor = 'var(--text-muted)';
+                    $borderClass = 'border-border-glow';
+                    $textAccentClass = 'text-text-muted';
                     $icon = 'fa-circle-info';
                     
                     if ($isDo) {
-                        $borderColor = 'rgba(16, 185, 129, 0.2)';
-                        $accentColor = 'var(--primary-emerald)';
+                        $borderClass = 'border-primary-emerald/20';
+                        $textAccentClass = 'text-primary-emerald';
                         $icon = 'fa-circle-check';
                     } elseif ($isDont) {
-                        $borderColor = 'rgba(239, 68, 68, 0.2)';
-                        $accentColor = '#EF4444';
+                        $borderClass = 'border-red-500/20';
+                        $textAccentClass = 'text-red-400';
                         $icon = 'fa-circle-xmark';
                     }
                 @endphp
                 
-                <div style="background: rgba(17, 24, 39, 0.7); border: 1px solid {{ $borderColor }}; border-radius: 12px; padding: 24px; margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                        <h3 style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid {{ $icon }}" style="color: {{ $accentColor }};"></i>
+                <div class="bg-[#111827]/70 border {{ $borderClass }} rounded-xl p-6 mb-5 backdrop-blur-sm">
+                    <div class="flex justify-between items-start mb-3 gap-3">
+                        <h3 class="text-sm lg:text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid {{ $icon }} {{ $textAccentClass }}"></i>
                             {{ $rule->title }}
                         </h3>
-                        <span style="font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted);">
+                        <span class="text-[9px] font-extrabold uppercase py-0.5 px-2 rounded bg-white/5 text-text-muted shrink-0 tracking-wide">
                             {{ $rule->category }}
                         </span>
                     </div>
 
                     @if(!empty($rule->content))
-                        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+                        <p class="text-xs lg:text-sm text-text-muted leading-relaxed mb-4">
                             {{ $rule->content }}
                         </p>
                     @endif
 
                     @if(!empty($rule->rules) && is_array($rule->rules))
-                        <ul style="list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <ul class="list-none pl-0 flex flex-col gap-2.5 mb-0">
                             @foreach($rule->rules as $rl)
-                                <li style="font-size: 12.5px; color: var(--text-main); display: flex; align-items: flex-start; gap: 10px; line-height: 1.45;">
-                                    <i class="fa-solid fa-circle" style="color: {{ $accentColor }}; font-size: 5px; margin-top: 7px; flex-shrink: 0;"></i>
+                                <li class="text-xs lg:text-sm text-text-main flex items-start gap-2.5 leading-snug">
+                                    <i class="fa-solid fa-circle {{ $textAccentClass }} text-[5px] mt-2 shrink-0"></i>
                                     <span>{{ $rl }}</span>
                                 </li>
                             @endforeach
@@ -135,9 +135,9 @@
                     @endif
                 </div>
             @empty
-                <div style="background: rgba(17, 24, 39, 0.3); border: 1px dashed var(--border-glow); border-radius: 12px; padding: 40px; text-align: center; color: var(--text-muted);">
-                    <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 12px;"></i>
-                    <p style="font-size: 13px;">No rules guidelines found for this exam type.</p>
+                <div class="bg-[#111827]/30 border border-dashed border-border-glow rounded-xl p-10 text-center text-text-muted">
+                    <i class="fa-solid fa-folder-open text-3xl mb-3"></i>
+                    <p class="text-xs">No rules guidelines found for this exam type.</p>
                 </div>
             @endforelse
         </div>
@@ -145,13 +145,4 @@
     </div>
 
 </div>
-
-<style>
-    @media (max-width: 768px) {
-        .guidelines-grid {
-            grid-template-columns: 1fr !important;
-            gap: 20px !important;
-        }
-    }
-</style>
 @endsection

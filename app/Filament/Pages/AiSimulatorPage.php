@@ -18,14 +18,23 @@ class AiSimulatorPage extends Page
     protected string $view = 'filament.pages.ai-simulator';
 
     public string $examType = 'BCS';
+
     public string $position = 'Administration Cadre';
+
     public string $candidateCv = 'Subject: Political Science, University: Dhaka University. Choice 1: Admin, Choice 2: Police. Born in Barisal.';
+
     public array $transcriptHistory = [];
+
     public string $currentQuestion = '';
+
     public string $candidateAnswer = '';
+
     public ?array $currentEvaluation = null;
+
     public string $statusMessage = '';
+
     public bool $isSessionActive = false;
+
     public array $expectedKeyPoints = [];
 
     /**
@@ -56,7 +65,7 @@ class AiSimulatorPage extends Page
             if (!empty($response)) {
                 $this->currentQuestion = $response['question'] ?? 'Introduce yourself and state your choices.';
                 $this->expectedKeyPoints = $response['expected_key_points'] ?? [];
-                
+
                 $this->transcriptHistory[] = [
                     'speaker' => $response['speaker'] ?? 'Chairman',
                     'text' => $this->currentQuestion,
@@ -68,7 +77,7 @@ class AiSimulatorPage extends Page
                 $this->statusMessage = 'Failed to generate first question. Verify your API key.';
             }
         } catch (\Exception $e) {
-            $this->statusMessage = 'Error starting session: ' . $e->getMessage();
+            $this->statusMessage = 'Error starting session: '.$e->getMessage();
         }
     }
 
@@ -111,7 +120,7 @@ class AiSimulatorPage extends Page
             if (!empty($response)) {
                 $this->currentQuestion = $response['question'] ?? 'Thank you. The board has concluded your viva.';
                 $this->expectedKeyPoints = $response['expected_key_points'] ?? [];
-                
+
                 $this->transcriptHistory[] = [
                     'speaker' => $response['speaker'] ?? 'Board Member',
                     'text' => $this->currentQuestion,
@@ -125,7 +134,7 @@ class AiSimulatorPage extends Page
             }
 
         } catch (\Exception $e) {
-            $this->statusMessage = 'Error processing turn: ' . $e->getMessage();
+            $this->statusMessage = 'Error processing turn: '.$e->getMessage();
         }
     }
 

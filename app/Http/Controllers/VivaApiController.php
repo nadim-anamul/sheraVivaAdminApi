@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\VivaCategory;
-use App\Models\MockSession;
-use App\Models\SessionEvaluation;
-use App\Models\Interviewer;
-use App\Models\Slot;
+use Agence104\LiveKit\AccessToken;
+use Agence104\LiveKit\AccessTokenOptions;
+use Agence104\LiveKit\VideoGrant;
 use App\Models\Booking;
+use App\Models\Interviewer;
+use App\Models\MockSession;
 use App\Models\QuestionBank;
+use App\Models\SessionEvaluation;
+use App\Models\Slot;
 use App\Models\VivaAdvice;
+use App\Models\VivaCategory;
 use App\Models\VivaRule;
 use App\Services\GeminiAiService;
-use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class VivaApiController extends Controller
 {
@@ -26,7 +30,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $categories
+            'data' => $categories,
         ], 200);
     }
 
@@ -68,8 +72,8 @@ class VivaApiController extends Controller
             'message' => 'Interview session and AI evaluation saved successfully',
             'data' => [
                 'session' => $session->load('vivaCategory'),
-                'evaluation' => $evaluation
-            ]
+                'evaluation' => $evaluation,
+            ],
         ], 201);
     }
 
@@ -85,7 +89,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $history
+            'data' => $history,
         ], 200);
     }
 
@@ -101,7 +105,7 @@ class VivaApiController extends Controller
         if (!$session) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Session log not found or unauthorized'
+                'message' => 'Session log not found or unauthorized',
             ], 404);
         }
 
@@ -109,7 +113,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $evaluation
+            'data' => $evaluation,
         ], 200);
     }
 
@@ -124,11 +128,11 @@ class VivaApiController extends Controller
         if (!$bookingId && !$meetingCode) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'The booking_id or meeting_code field is required.'
+                'message' => 'The booking_id or meeting_code field is required.',
             ], 422);
         }
 
-        $query = \App\Models\Booking::with(['slot.availabilityBlock', 'interviewer', 'candidate']);
+        $query = Booking::with(['slot.availabilityBlock', 'interviewer', 'candidate']);
 
         if ($meetingCode) {
             $booking = $query->where('meeting_code', $meetingCode)->first();
@@ -139,14 +143,14 @@ class VivaApiController extends Controller
         if (!$booking) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Viva booking not found.'
+                'message' => 'Viva booking not found.',
             ], 404);
         }
 
         if ($booking->payment_status !== 'success') {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Payment has not been completed for this viva slot.'
+                'message' => 'Payment has not been completed for this viva slot.',
             ], 400);
         }
 
@@ -154,8 +158,8 @@ class VivaApiController extends Controller
         $user = $request->user();
         $now = now();
         $dateStr = $booking->slot->availabilityBlock->date->format('Y-m-d');
-        $startTime = \Carbon\Carbon::parse($dateStr . ' ' . $booking->slot->start_time);
-        $endTime = \Carbon\Carbon::parse($dateStr . ' ' . $booking->slot->end_time);
+        $startTime = Carbon::parse($dateStr.' '.$booking->slot->start_time);
+        $endTime = Carbon::parse($dateStr.' '.$booking->slot->end_time);
 
         // Allow joining 5 minutes early
         $bufferStartTime = $startTime->copy()->subMinutes(5);
@@ -165,14 +169,14 @@ class VivaApiController extends Controller
             if ($now->lt($bufferStartTime)) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'The viva session is not active yet. You can join starting 5 minutes before scheduled time.'
+                    'message' => 'The viva session is not active yet. You can join starting 5 minutes before scheduled time.',
                 ], 403);
             }
 
             if ($now->gt($endTime)) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'This viva session has already expired.'
+                    'message' => 'This viva session has already expired.',
                 ], 403);
             }
         }
@@ -184,7 +188,7 @@ class VivaApiController extends Controller
         } elseif ($user->id !== $booking->candidate_id) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'You are not authorized to join this live viva session.'
+                'message' => 'You are not authorized to join this live viva session.',
             ], 403);
         }
 
@@ -193,15 +197,15 @@ class VivaApiController extends Controller
             $apiSecret = env('LIVEKIT_API_SECRET', 'secret_key_must_be_at_least_32_chars_long');
             $livekitUrl = env('LIVEKIT_URL', 'http://localhost:7880');
 
-            $identity = $isExaminer ? 'examiner_' . $user->id : 'candidate_' . $user->id;
-            $name = $isExaminer ? 'পরীক্ষক (' . $booking->interviewer->name . ')' : 'ক্যান্ডিডেট (' . $user->name . ')';
+            $identity = $isExaminer ? 'examiner_'.$user->id : 'candidate_'.$user->id;
+            $name = $isExaminer ? 'পরীক্ষক ('.$booking->interviewer->name.')' : 'ক্যান্ডিডেট ('.$user->name.')';
 
-            $tokenOptions = (new \Agence104\LiveKit\AccessTokenOptions())
+            $tokenOptions = (new AccessTokenOptions)
                 ->setIdentity($identity)
                 ->setName($name);
 
             // Candidate has standard publish, Examiner has elevated administrative role (canPublish, subscribe, canPublishData etc.)
-            $videoGrant = (new \Agence104\LiveKit\VideoGrant())
+            $videoGrant = (new VideoGrant)
                 ->setRoomJoin(true)
                 ->setRoomName($booking->livekit_room_name)
                 ->setCanPublish(true)
@@ -212,7 +216,7 @@ class VivaApiController extends Controller
                 $videoGrant->setRoomAdmin(true);
             }
 
-            $token = (new \Agence104\LiveKit\AccessToken($apiKey, $apiSecret))
+            $token = (new AccessToken($apiKey, $apiSecret))
                 ->init($tokenOptions)
                 ->setGrant($videoGrant)
                 ->toJwt();
@@ -234,13 +238,13 @@ class VivaApiController extends Controller
                     ],
                     'start_time' => $startTime->toIso8601String(),
                     'end_time' => $endTime->toIso8601String(),
-                ]
+                ],
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to generate LiveKit token: ' . $e->getMessage()
+                'message' => 'Failed to generate LiveKit token: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -258,7 +262,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $interviewers
+            'data' => $interviewers,
         ], 200);
     }
 
@@ -272,7 +276,7 @@ class VivaApiController extends Controller
         if (!$interviewer) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Interviewer not found or inactive.'
+                'message' => 'Interviewer not found or inactive.',
             ], 404);
         }
 
@@ -301,7 +305,7 @@ class VivaApiController extends Controller
         foreach ($groupedSlots as $date => $timeSlots) {
             $formatted[] = [
                 'date' => $date,
-                'slots' => $timeSlots
+                'slots' => $timeSlots,
             ];
         }
 
@@ -309,8 +313,8 @@ class VivaApiController extends Controller
             'status' => 'success',
             'data' => [
                 'interviewer' => $interviewer,
-                'availability_dates' => $formatted
-            ]
+                'availability_dates' => $formatted,
+            ],
         ], 200);
     }
 
@@ -330,7 +334,7 @@ class VivaApiController extends Controller
         if (!$slot || !$slot->isAvailable()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'The selected viva time slot is no longer available.'
+                'message' => 'The selected viva time slot is no longer available.',
             ], 422);
         }
 
@@ -346,13 +350,13 @@ class VivaApiController extends Controller
             'amount_paid' => $validated['amount_paid'],
             'payment_status' => 'success', // Auto-approve transaction for demo / instant booking simplicity
             'payment_trx_id' => $validated['payment_trx_id'],
-            'livekit_room_name' => 'viva_room_' . uniqid() . '_' . $slot->id,
+            'livekit_room_name' => 'viva_room_'.uniqid().'_'.$slot->id,
         ]);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Viva slot booked and payment registered successfully.',
-            'data' => $booking->load(['slot.availabilityBlock', 'interviewer'])
+            'data' => $booking->load(['slot.availabilityBlock', 'interviewer']),
         ], 201);
     }
 
@@ -385,7 +389,8 @@ class VivaApiController extends Controller
             ->get()
             ->filter(function ($b) {
                 $dateStr = $b->slot->availabilityBlock->date->format('Y-m-d');
-                $endTime = \Carbon\Carbon::parse($dateStr . ' ' . $b->slot->end_time);
+                $endTime = Carbon::parse($dateStr.' '.$b->slot->end_time);
+
                 return $endTime->isFuture();
             })
             ->values();
@@ -410,7 +415,7 @@ class VivaApiController extends Controller
                 ],
                 'upcoming_viva_sessions' => $upcomingBookings,
                 'recent_ai_recommendations' => $recentEvaluations,
-            ]
+            ],
         ], 200);
     }
 
@@ -429,8 +434,8 @@ class VivaApiController extends Controller
             $search = $request->query('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%")
-                  ->orWhere('board', 'like', "%{$search}%");
+                    ->orWhere('subject', 'like', "%{$search}%")
+                    ->orWhere('board', 'like', "%{$search}%");
             });
         }
 
@@ -443,7 +448,7 @@ class VivaApiController extends Controller
                 'meta' => [
                     'total' => $items->count(),
                     'per_page' => 'all',
-                ]
+                ],
             ], 200);
         }
 
@@ -458,7 +463,7 @@ class VivaApiController extends Controller
                 'last_page' => $items->lastPage(),
                 'per_page' => $items->perPage(),
                 'total' => $items->total(),
-            ]
+            ],
         ], 200);
     }
 
@@ -472,13 +477,13 @@ class VivaApiController extends Controller
         if (!$item) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Question bank item not found.'
+                'message' => 'Question bank item not found.',
             ], 404);
         }
 
         return response()->json([
             'status' => 'success',
-            'data' => $item
+            'data' => $item,
         ], 200);
     }
 
@@ -493,7 +498,7 @@ class VivaApiController extends Controller
             $category = $request->category;
             $query->where(function ($q) use ($category) {
                 $q->where('category', $category)
-                  ->orWhere('category', 'general');
+                    ->orWhere('category', 'general');
             });
         }
 
@@ -501,7 +506,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $advices
+            'data' => $advices,
         ], 200);
     }
 
@@ -516,11 +521,11 @@ class VivaApiController extends Controller
             $category = $request->category;
             $query->where(function ($q) use ($category) {
                 $q->where('category', $category)
-                  ->orWhere('category', 'general')
-                  ->orWhere('category', 'do')
-                  ->orWhere('category', 'dont')
-                  ->orWhere('category', $category . '_do')
-                  ->orWhere('category', $category . '_dont');
+                    ->orWhere('category', 'general')
+                    ->orWhere('category', 'do')
+                    ->orWhere('category', 'dont')
+                    ->orWhere('category', $category.'_do')
+                    ->orWhere('category', $category.'_dont');
             });
         }
 
@@ -528,7 +533,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $rules
+            'data' => $rules,
         ], 200);
     }
 
@@ -555,7 +560,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $questionData
+            'data' => $questionData,
         ], 200);
     }
 
@@ -583,7 +588,7 @@ class VivaApiController extends Controller
                 'viva_category_id' => $catId,
                 'transcript' => [
                     ['speaker' => 'Chairman', 'text' => $validated['question']],
-                    ['speaker' => 'Candidate', 'text' => $validated['answer']]
+                    ['speaker' => 'Candidate', 'text' => $validated['answer']],
                 ],
                 'viva_date' => now(),
             ]);
@@ -601,7 +606,7 @@ class VivaApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $evaluation
+            'data' => $evaluation,
         ], 200);
     }
 }

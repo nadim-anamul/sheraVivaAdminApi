@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobUpdate;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class JobUpdateApiController extends Controller
 {
@@ -17,9 +17,9 @@ class JobUpdateApiController extends Controller
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%$search%")
-                  ->orWhere('organization', 'like', "%$search%");
+                    ->orWhere('organization', 'like', "%$search%");
             });
         }
 
@@ -27,7 +27,7 @@ class JobUpdateApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $circulars
+            'data' => $circulars,
         ], 200);
     }
 
@@ -40,9 +40,9 @@ class JobUpdateApiController extends Controller
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%$search%")
-                  ->orWhere('organization', 'like', "%$search%");
+                    ->orWhere('organization', 'like', "%$search%");
             });
         }
 
@@ -50,7 +50,7 @@ class JobUpdateApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $results
+            'data' => $results,
         ], 200);
     }
 }

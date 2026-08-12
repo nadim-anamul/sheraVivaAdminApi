@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Interviewer;
 use App\Models\AvailabilityBlock;
-use App\Models\Slot;
 use App\Models\Booking;
+use App\Models\Interviewer;
+use App\Models\Slot;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -70,7 +70,7 @@ class VivaBookingTokenTest extends TestCase
         $response->assertStatus(404)
             ->assertJson([
                 'status' => 'error',
-                'message' => 'Viva booking not found.'
+                'message' => 'Viva booking not found.',
             ]);
     }
 
@@ -112,7 +112,7 @@ class VivaBookingTokenTest extends TestCase
         $response->assertStatus(400)
             ->assertJson([
                 'status' => 'error',
-                'message' => 'Payment has not been completed for this viva slot.'
+                'message' => 'Payment has not been completed for this viva slot.',
             ]);
     }
 
@@ -122,7 +122,7 @@ class VivaBookingTokenTest extends TestCase
     public function test_returns_200_with_token_for_candidate(): void
     {
         $user = User::factory()->create([
-            'name' => 'John Doe'
+            'name' => 'John Doe',
         ]);
 
         $interviewer = Interviewer::create([
@@ -171,7 +171,7 @@ class VivaBookingTokenTest extends TestCase
                     ],
                     'start_time',
                     'end_time',
-                ]
+                ],
             ]);
 
         $data = $response->json('data');
@@ -188,11 +188,11 @@ class VivaBookingTokenTest extends TestCase
         // Interviewer logs in using User model with same email
         $examinerUser = User::factory()->create([
             'email' => 'mahbub@example.com',
-            'name' => 'Mahbub Rahman'
+            'name' => 'Mahbub Rahman',
         ]);
 
         $candidateUser = User::factory()->create([
-            'name' => 'John Doe'
+            'name' => 'John Doe',
         ]);
 
         $interviewer = Interviewer::create([

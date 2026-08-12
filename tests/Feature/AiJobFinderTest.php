@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\JobUpdate;
-use App\Services\GeminiAiService;
 use App\Filament\Pages\AiJobFinderPage;
+use App\Models\User;
+use App\Services\GeminiAiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -17,8 +17,8 @@ class AiJobFinderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        \Illuminate\Support\Facades\Http::fake([
-            '*' => \Illuminate\Support\Facades\Http::response('Fake PDF content', 200)
+        Http::fake([
+            '*' => Http::response('Fake PDF content', 200),
         ]);
     }
 
@@ -27,7 +27,7 @@ class AiJobFinderTest extends TestCase
      */
     public function test_gemini_service_returns_fallback_jobs_when_api_key_is_empty(): void
     {
-        $service = new GeminiAiService();
+        $service = new GeminiAiService;
         $results = $service->searchGovtJobs('BPSC');
 
         $this->assertIsArray($results);
@@ -77,7 +77,7 @@ class AiJobFinderTest extends TestCase
                 'qualifications' => 'স্নাতক',
                 'application_deadline' => '2026-08-30',
                 'description' => 'টেস্ট বিজ্ঞপ্তি বিবরণী',
-            ]
+            ],
         ];
 
         // Instantiate livewire component

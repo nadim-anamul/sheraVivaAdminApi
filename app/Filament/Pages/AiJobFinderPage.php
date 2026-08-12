@@ -5,9 +5,9 @@ namespace App\Filament\Pages;
 use App\Models\JobUpdate;
 use App\Services\GeminiAiService;
 use BackedEnum;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
-use Filament\Notifications\Notification;
 
 class AiJobFinderPage extends Page
 {
@@ -20,9 +20,13 @@ class AiJobFinderPage extends Page
     protected string $view = 'filament.pages.ai-job-finder';
 
     public string $searchQuery = 'BPSC';
+
     public array $discoveredJobs = [];
+
     public bool $isSearching = false;
+
     public string $statusMessage = '';
+
     public array $importedIndices = [];
 
     /**
@@ -39,12 +43,12 @@ class AiJobFinderPage extends Page
             $jobs = $gemini->searchGovtJobs($this->searchQuery);
             if (!empty($jobs)) {
                 $this->discoveredJobs = $jobs;
-                $this->statusMessage = 'Successfully discovered ' . count($jobs) . ' matches!';
+                $this->statusMessage = 'Successfully discovered '.count($jobs).' matches!';
             } else {
                 $this->statusMessage = 'No matching government job circulars or results were found.';
             }
         } catch (\Exception $e) {
-            $this->statusMessage = 'Search failed: ' . $e->getMessage();
+            $this->statusMessage = 'Search failed: '.$e->getMessage();
         } finally {
             $this->isSearching = false;
         }
@@ -75,6 +79,7 @@ class AiJobFinderPage extends Page
                 ->title('Already Imported')
                 ->body('This job circular is already imported.')
                 ->send();
+
             return;
         }
 
@@ -87,6 +92,7 @@ class AiJobFinderPage extends Page
                 ->title('Validation Error')
                 ->body('Title and Organization are required to import.')
                 ->send();
+
             return;
         }
 
@@ -103,6 +109,7 @@ class AiJobFinderPage extends Page
                     ->title('Possible Duplicate')
                     ->body('A job circular with this title or file link already exists in the database.')
                     ->send();
+
                 return;
             }
 
@@ -121,16 +128,16 @@ class AiJobFinderPage extends Page
 
             $this->importedIndices[] = $index;
 
-            session()->flash('success', 'Successfully imported: ' . $job['title']);
+            session()->flash('success', 'Successfully imported: '.$job['title']);
 
             Notification::make()
                 ->success()
                 ->title('Circular Imported')
-                ->body('Successfully imported: ' . $job['title'])
+                ->body('Successfully imported: '.$job['title'])
                 ->send();
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Import Failed: ' . $e->getMessage());
+            session()->flash('error', 'Import Failed: '.$e->getMessage());
             Notification::make()
                 ->danger()
                 ->title('Import Failed')

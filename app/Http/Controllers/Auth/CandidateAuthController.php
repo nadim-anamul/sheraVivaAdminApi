@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Interviewer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class CandidateAuthController extends Controller
 {
@@ -20,6 +19,7 @@ class CandidateAuthController extends Controller
         if (Auth::check()) {
             return $this->redirectUserBasedOnRole(Auth::user());
         }
+
         return view('auth.login');
     }
 
@@ -35,6 +35,7 @@ class CandidateAuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+
             return $this->redirectUserBasedOnRole(Auth::user());
         }
 
@@ -51,6 +52,7 @@ class CandidateAuthController extends Controller
         if (Auth::check()) {
             return $this->redirectUserBasedOnRole(Auth::user());
         }
+
         return view('auth.register');
     }
 

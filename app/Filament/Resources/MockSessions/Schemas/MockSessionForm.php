@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\MockSessions\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -23,7 +23,7 @@ class MockSessionForm
                     ->required(),
                 DateTimePicker::make('viva_date')
                     ->required(),
-                
+
                 Repeater::make('transcript')
                     ->label('Mock Session Conversation Transcript')
                     ->schema([
@@ -45,8 +45,8 @@ class MockSessionForm
                     ->collapsible()
                     ->cloneable()
                     ->reorderable()
-                    ->itemLabel(fn (array $state): ?string => ($state['speaker'] ?? 'Speaker') . ': ' . (isset($state['text']) ? Str::limit($state['text'], 50) : ''))
-                    ->columnSpanFull()
+                    ->itemLabel(fn (array $state): ?string => ($state['speaker'] ?? 'Speaker').': '.(isset($state['text']) ? Str::limit($state['text'], 50) : ''))
+                    ->columnSpanFull(),
             ]);
     }
 }

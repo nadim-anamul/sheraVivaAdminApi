@@ -6,13 +6,13 @@ use App\Filament\Examiner\Resources\BookingResource\Pages\EditBooking;
 use App\Filament\Examiner\Resources\BookingResource\Pages\ListBookings;
 use App\Models\Booking;
 use App\Models\Interviewer;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\EditAction;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class BookingResource extends Resource
@@ -41,7 +41,7 @@ class BookingResource extends Resource
                     ->dehydrated(false),
                 TextInput::make('slot_time')
                     ->label('Scheduled Time')
-                    ->default(fn ($record) => $record->slot ? "{$record->slot->start_time} - {$record->slot->end_time} on " . ($record->slot->availabilityBlock->date?->format('Y-m-d') ?? 'N/A') : 'N/A')
+                    ->default(fn ($record) => $record->slot ? "{$record->slot->start_time} - {$record->slot->end_time} on ".($record->slot->availabilityBlock->date?->format('Y-m-d') ?? 'N/A') : 'N/A')
                     ->disabled()
                     ->dehydrated(false),
                 TextInput::make('livekit_room_name')
@@ -128,6 +128,7 @@ class BookingResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $interviewerId = Interviewer::where('email', auth()->user()->email)->value('id') ?? 0;
+
         return parent::getEloquentQuery()->where('interviewer_id', $interviewerId);
     }
 

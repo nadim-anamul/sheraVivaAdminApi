@@ -2,27 +2,24 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\VivaCategory;
-use App\Models\JobUpdate;
-use App\Models\Interviewer;
 use App\Models\AvailabilityBlock;
-use App\Models\Slot;
 use App\Models\Booking;
+use App\Models\Interviewer;
+use App\Models\JobUpdate;
 use App\Models\MockSession;
-use App\Models\SessionEvaluation;
 use App\Models\QuestionBank;
+use App\Models\SessionEvaluation;
+use App\Models\Slot;
+use App\Models\User;
 use App\Models\VivaAdvice;
+use App\Models\VivaCategory;
 use App\Models\VivaRule;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
 
 class DatabaseSeeder extends Seeder
 {
-
     /**
      * Seed the application's database.
      */
@@ -248,7 +245,7 @@ class DatabaseSeeder extends Seeder
                     ['speaker' => 'Candidate', 'text' => 'Basically, under the Mobile Court Act 2009, executive magistrates can take cognizance of offenses committed in their presence and issue judicial sentences on the spot within the limits of law.'],
                 ],
                 'feedback' => 'Highly promising BCS Admin attempt. Your speech delivery was clear, and you showed excellent mastery of the Mobile Court Act 2009. Continue to focus on crisp CADRE choice arguments.',
-                'recs' => "1. Decrease filler word 'basically' when transitioning between points.\n2. Work on introducing direct articles of the Constitution of Bangladesh relating to public administration."
+                'recs' => "1. Decrease filler word 'basically' when transitioning between points.\n2. Work on introducing direct articles of the Constitution of Bangladesh relating to public administration.",
             ],
             [
                 'category' => 'bank_ad',
@@ -262,7 +259,7 @@ class DatabaseSeeder extends Seeder
                     ['speaker' => 'Candidate', 'text' => 'A rise in repo rate makes borrowing more expensive for commercial banks. This increases interest rates for retail customers, reducing consumer demand and curtailing inflation.'],
                 ],
                 'feedback' => 'Spectacular AD Board simulation! You maintained excellent control over banking concepts and showed perfect articulation. Minimal filler words used.',
-                'recs' => "1. Keep practicing macroeconomic indicator updates (GDP, current inflation rates).\n2. Expand on foreign reserve management strategies when asked about balance of payments."
+                'recs' => "1. Keep practicing macroeconomic indicator updates (GDP, current inflation rates).\n2. Expand on foreign reserve management strategies when asked about balance of payments.",
             ],
         ];
 
@@ -295,7 +292,7 @@ class DatabaseSeeder extends Seeder
                 'amount_paid' => $interviewerModels[0]->base_price,
                 'payment_status' => 'success',
                 'payment_trx_id' => 'TRX_SEED_BKASH_99',
-                'livekit_room_name' => 'viva_room_' . uniqid(),
+                'livekit_room_name' => 'viva_room_'.uniqid(),
                 'grade_score' => null, // Upcoming session, not graded yet!
                 'feedback_remarks' => null,
             ]);
@@ -314,7 +311,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($banks as $examType => $fileName) {
-            $path = $jsonBankDir . '/' . $fileName;
+            $path = $jsonBankDir.'/'.$fileName;
             if (File::exists($path)) {
                 $items = json_decode(File::get($path), true);
                 if (is_array($items)) {
@@ -322,7 +319,7 @@ class DatabaseSeeder extends Seeder
                         QuestionBank::create([
                             'item_id' => $item['id'] ?? null,
                             'exam_type' => $item['examType'] ?? $examType,
-                            'title' => $item['title'] ?? ($examType . ' Viva Experience'),
+                            'title' => $item['title'] ?? ($examType.' Viva Experience'),
                             'edition' => $item['edition'] ?? null,
                             'year' => $item['year'] ?? null,
                             'candidate_name' => $item['candidateName'] ?? null,
@@ -343,7 +340,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // 10. Seed Viva Advice & Rules
-        $advicePath = $jsonBankDir . '/viva_advice.json';
+        $advicePath = $jsonBankDir.'/viva_advice.json';
         if (File::exists($advicePath)) {
             $advices = json_decode(File::get($advicePath), true);
             if (is_array($advices)) {
@@ -358,7 +355,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $rulesPath = $jsonBankDir . '/viva_rules.json';
+        $rulesPath = $jsonBankDir.'/viva_rules.json';
         if (File::exists($rulesPath)) {
             $rulesData = json_decode(File::get($rulesPath), true);
             if (is_array($rulesData)) {
@@ -380,7 +377,7 @@ class DatabaseSeeder extends Seeder
                 }
                 if (isset($rulesData['generalTip'])) {
                     VivaRule::create([
-                        'title' => $rulesData['generalTip']['title'] ?? "General Tip",
+                        'title' => $rulesData['generalTip']['title'] ?? 'General Tip',
                         'category' => 'general',
                         'content' => $rulesData['generalTip']['content'] ?? null,
                         'is_active' => true,

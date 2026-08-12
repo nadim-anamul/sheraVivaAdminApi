@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\AvailabilityBlocks\Schemas;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Schema;
 
 class AvailabilityBlockForm

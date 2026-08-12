@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use App\Models\VivaCategory;
+use App\Services\GeminiAiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ApiKeyVerificationTest extends TestCase
@@ -23,7 +27,7 @@ class ApiKeyVerificationTest extends TestCase
         $response->assertStatus(401)
             ->assertJson([
                 'status' => 'error',
-                'message' => 'Unauthorized: Invalid or missing API Key.'
+                'message' => 'Unauthorized: Invalid or missing API Key.',
             ]);
     }
 
@@ -40,7 +44,7 @@ class ApiKeyVerificationTest extends TestCase
         $response->assertStatus(401)
             ->assertJson([
                 'status' => 'error',
-                'message' => 'Unauthorized: Invalid or missing API Key.'
+                'message' => 'Unauthorized: Invalid or missing API Key.',
             ]);
     }
 
@@ -58,7 +62,7 @@ class ApiKeyVerificationTest extends TestCase
             'subtitle' => 'BCS Administration',
             'icon_name' => 'briefcase',
             'color_hex' => '#000000',
-            'description' => 'BCS Administration Cadre'
+            'description' => 'BCS Administration Cadre',
         ]);
 
         $response = $this->withHeader('X-Api-Key', config('services.shera_viva.api_key'))
@@ -83,7 +87,7 @@ class ApiKeyVerificationTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => $adminEmail]);
 
         // Attempt login via Laravel Auth
-        $authAttempt = \Illuminate\Support\Facades\Auth::attempt([
+        $authAttempt = Auth::attempt([
             'email' => $adminEmail,
             'password' => $adminPassword,
         ]);
@@ -93,8 +97,8 @@ class ApiKeyVerificationTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => $adminEmail]);
 
         // Verify the password in database is correctly hashed
-        $user = \App\Models\User::where('email', $adminEmail)->first();
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check($adminPassword, $user->password));
+        $user = User::where('email', $adminEmail)->first();
+        $this->assertTrue(Hash::check($adminPassword, $user->password));
     }
 
     /**
@@ -102,23 +106,23 @@ class ApiKeyVerificationTest extends TestCase
      */
     public function test_docx_text_extraction_parses_xml_correctly(): void
     {
-        $tempFile = tempnam(sys_get_temp_dir(), 'test_docx_') . '.docx';
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_docx_').'.docx';
 
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         if ($zip->open($tempFile, \ZipArchive::CREATE) === true) {
-            $xmlContent = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
-                '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' .
-                '<w:body>' .
-                '<w:p><w:r><w:t>বিসিএস ভাইভা অভিজ্ঞতা ১</w:t></w:r></w:p>' .
-                '<w:p><w:r><w:t>প্রশ্ন: আপনার নাম কি?</w:t></w:r></w:p>' .
-                '<w:p><w:r><w:t>উত্তর: আরিফুল ইসলাম স্যার।</w:t></w:r></w:p>' .
-                '</w:body>' .
+            $xmlContent = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'.
+                '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '<w:body>'.
+                '<w:p><w:r><w:t>বিসিএস ভাইভা অভিজ্ঞতা ১</w:t></w:r></w:p>'.
+                '<w:p><w:r><w:t>প্রশ্ন: আপনার নাম কি?</w:t></w:r></w:p>'.
+                '<w:p><w:r><w:t>উত্তর: আরিফুল ইসলাম স্যার।</w:t></w:r></w:p>'.
+                '</w:body>'.
                 '</w:document>';
             $zip->addFromString('word/document.xml', $xmlContent);
             $zip->close();
         }
 
-        $service = new \App\Services\GeminiAiService();
+        $service = new GeminiAiService;
         $extractedText = $service->extractTextFromDocx($tempFile);
 
         @unlink($tempFile);
@@ -135,7 +139,7 @@ class ApiKeyVerificationTest extends TestCase
     public function test_generate_ai_question_endpoint_with_custom_context(): void
     {
         // Mock Gemini response to bypass actual API connection during tests
-        $this->mock(\App\Services\GeminiAiService::class, function ($mock) {
+        $this->mock(GeminiAiService::class, function ($mock) {
             $mock->shouldReceive('generateVivaQuestion')
                 ->once()
                 ->with('BCS Admin Board', [], 'BCS', 'Administration Cadre', 'Major: Economics')
@@ -144,7 +148,7 @@ class ApiKeyVerificationTest extends TestCase
                     'speaker' => 'Chairman',
                     'question' => 'Welcome. Explain the concept of opportunity cost.',
                     'context_hint' => 'Economics background test',
-                    'expected_key_points' => ['Opportunity cost definition']
+                    'expected_key_points' => ['Opportunity cost definition'],
                 ]);
         });
 
@@ -154,15 +158,15 @@ class ApiKeyVerificationTest extends TestCase
                 'transcript_history' => [],
                 'exam_type' => 'BCS',
                 'position' => 'Administration Cadre',
-                'candidate_cv' => 'Major: Economics'
+                'candidate_cv' => 'Major: Economics',
             ]);
 
         $response->assertStatus(200)
             ->assertJson([
                 'status' => 'success',
                 'data' => [
-                    'question' => 'Welcome. Explain the concept of opportunity cost.'
-                ]
+                    'question' => 'Welcome. Explain the concept of opportunity cost.',
+                ],
             ]);
     }
 }

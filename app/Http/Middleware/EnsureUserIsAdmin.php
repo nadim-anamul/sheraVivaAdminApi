@@ -20,6 +20,7 @@ class EnsureUserIsAdmin
 
         if ($user->email !== config('services.admin.email', 'admin@seraviva.com')) {
             auth()->logout();
+
             return redirect()->route('filament.admin.auth.login')->withErrors([
                 'email' => 'Access denied. You do not have administrator permissions.',
             ]);

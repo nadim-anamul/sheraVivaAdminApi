@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
@@ -32,10 +33,10 @@ class Booking extends Model
     {
         static::creating(function ($booking) {
             if (empty($booking->meeting_code)) {
-                $booking->meeting_code = 'vva-' . strtolower(\Illuminate\Support\Str::random(4)) . '-' . strtolower(\Illuminate\Support\Str::random(3));
+                $booking->meeting_code = 'vva-'.strtolower(Str::random(4)).'-'.strtolower(Str::random(3));
             }
             if (empty($booking->livekit_room_name)) {
-                $booking->livekit_room_name = 'viva_room_' . strtolower(\Illuminate\Support\Str::random(8));
+                $booking->livekit_room_name = 'viva_room_'.strtolower(Str::random(8));
             }
         });
     }

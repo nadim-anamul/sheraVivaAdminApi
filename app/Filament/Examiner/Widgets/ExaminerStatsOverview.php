@@ -3,8 +3,8 @@
 namespace App\Filament\Examiner\Widgets;
 
 use App\Models\Booking;
-use App\Models\Slot;
 use App\Models\Interviewer;
+use App\Models\Slot;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -33,7 +33,7 @@ class ExaminerStatsOverview extends BaseWidget
                 ->description('Total availability blocks generated')
                 ->descriptionIcon('heroicon-m-calendar')
                 ->color('info'),
-            Stat::make('Total Earnings', number_format($totalEarnings) . ' BDT')
+            Stat::make('Total Earnings', number_format($totalEarnings).' BDT')
                 ->description('Revenue from successful bookings')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('warning'),

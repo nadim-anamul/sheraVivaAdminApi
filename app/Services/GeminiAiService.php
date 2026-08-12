@@ -2,15 +2,20 @@
 
 namespace App\Services;
 
+use App\Models\QuestionBank;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GeminiAiService
 {
     protected string $apiKey;
+
     protected string $model;
+
     protected string $conversationModel;
+
     protected string $evaluationModel;
+
     protected string $baseUrl;
 
     public function __construct()
@@ -28,10 +33,10 @@ class GeminiAiService
     public function convertFileToJson(string $filePath, string $mimeType = 'application/pdf', string $examType = 'BCS'): array
     {
         // For DOCX files, extract text locally first as Gemini does not natively support DOCX base64 OLE archives
-        if ($mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
-            str_ends_with(strtolower($filePath), '.docx') || 
+        if ($mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+            str_ends_with(strtolower($filePath), '.docx') ||
             str_ends_with(strtolower($filePath), '.doc')) {
-            
+
             $text = $this->extractTextFromDocx($filePath);
             if (!empty($text)) {
                 return $this->convertDocToJson($text, $examType);
@@ -138,10 +143,10 @@ PROMPT;
      * Incorporates RAG (Retrieval Augmented Generation) context from past real transcripts.
      */
     public function generateVivaQuestion(
-        string $categoryTitle, 
-        array $transcriptHistory = [], 
-        string $examType = 'BCS', 
-        string $position = 'General', 
+        string $categoryTitle,
+        array $transcriptHistory = [],
+        string $examType = 'BCS',
+        string $position = 'General',
         string $candidateCv = ''
     ): array {
         $historyText = '';
@@ -152,11 +157,11 @@ PROMPT;
         }
 
         // Fetch up to 3 relevant past viva transcripts from DB matching the exam type and position/subject (RAG)
-        $relevantExperiences = \App\Models\QuestionBank::where('exam_type', $examType)
+        $relevantExperiences = QuestionBank::where('exam_type', $examType)
             ->where(function ($query) use ($position, $candidateCv) {
                 if (!empty($position)) {
                     $query->orWhere('title', 'like', "%{$position}%")
-                          ->orWhere('subject', 'like', "%{$position}%");
+                        ->orWhere('subject', 'like', "%{$position}%");
                 }
                 if (!empty($candidateCv)) {
                     $query->orWhere('subject', 'like', "%{$candidateCv}%");
@@ -165,11 +170,11 @@ PROMPT;
             ->limit(3)
             ->get();
 
-        $realExamplesContext = "";
+        $realExamplesContext = '';
         if ($relevantExperiences->isNotEmpty()) {
             $realExamplesContext = "Here is context from REAL past board viva transcripts matching this exam/position:\n";
             foreach ($relevantExperiences as $index => $exp) {
-                $realExamplesContext .= "Example " . ($index + 1) . " (" . $exp->title . "):\n";
+                $realExamplesContext .= 'Example '.($index + 1).' ('.$exp->title."):\n";
                 if (is_array($exp->transcript)) {
                     foreach (array_slice($exp->transcript, 0, 4) as $exStep) {
                         $speaker = $exStep['speaker'] ?? 'Interviewer';
@@ -245,7 +250,7 @@ PROMPT;
                 'fillers_detected' => 2,
                 'feedback' => "Good effort! Your response addressed the core topic for {$categoryTitle}. Try to reference relevant legal/economic frameworks more directly.",
                 'recommendations' => "1. Maintain strong eye contact and clear pacing.\n2. Support your statements with official statistics where applicable.",
-                'model_answer' => "Sir, under the relevant regulations, we should prioritize national interest and administrative efficiency while ensuring full adherence to constitutional mandates."
+                'model_answer' => 'Sir, under the relevant regulations, we should prioritize national interest and administrative efficiency while ensuring full adherence to constitutional mandates.',
             ];
         }
 
@@ -324,7 +329,7 @@ Constraint: Return ONLY a valid JSON array of objects. Do not include markdown w
 PROMPT;
 
         $tools = [
-            ['googleSearch' => (object)[]]
+            ['googleSearch' => (object) []],
         ];
 
         // Route to evaluationModel (usually Pro model, best for tool calls and search grounding)
@@ -343,7 +348,7 @@ PROMPT;
                     'vacancies' => '৪৪তম বিসিএস ক্যাডার পদসমূহ',
                     'application_deadline' => null,
                     'qualifications' => 'প্রিলিমিনারি ও লিখিত পরীক্ষায় উত্তীর্ণ প্রার্থী',
-                    'description' => '৪৪তম বিসিএস মৌখিক পরীক্ষার সময়সূচী ও বিস্তারিত নির্দেশনাবলী সংক্রান্ত বিজ্ঞপ্তি।'
+                    'description' => '৪৪তম বিসিএস মৌখিক পরীক্ষার সময়সূচী ও বিস্তারিত নির্দেশনাবলী সংক্রান্ত বিজ্ঞপ্তি।',
                 ],
                 [
                     'title' => 'বাংলাদেশ ব্যাংক সহকারী পরিচালক (জেনারেল) পদের ভাইভা পরীক্ষার সময়সূচী',
@@ -355,7 +360,7 @@ PROMPT;
                     'vacancies' => '২২৫ টি পদ',
                     'application_deadline' => now()->addDays(20)->format('Y-m-d'),
                     'qualifications' => 'যেকোনো বিষয়ে ৪ বছর মেয়াদী স্নাতক',
-                    'description' => 'সহকারী পরিচালক পদের জন্য লিখিত পরীক্ষার ফল ও মৌখিক পরীক্ষার সময়সূচী প্রকাশ।'
+                    'description' => 'সহকারী পরিচালক পদের জন্য লিখিত পরীক্ষার ফল ও মৌখিক পরীক্ষার সময়সূচী প্রকাশ।',
                 ],
                 [
                     'title' => 'সরকারি প্রাথমিক বিদ্যালয়ে সহকারী শিক্ষক নিয়োগ ২০২৬ (৩য় ধাপের চূড়ান্ত ফলাফল)',
@@ -367,8 +372,8 @@ PROMPT;
                     'vacancies' => '৬ হাজার+ পদ',
                     'application_deadline' => null,
                     'qualifications' => '৩য় ধাপের পরীক্ষায় অংশ নেওয়া প্রার্থী',
-                    'description' => 'ঢাকা ও চট্টগ্রাম বিভাগের সরকারি প্রাথমিক বিদ্যালয় সহকারী শিক্ষক নিয়োগ পরীক্ষার চূড়ান্ত ফলাফল।'
-                ]
+                    'description' => 'ঢাকা ও চট্টগ্রাম বিভাগের সরকারি প্রাথমিক বিদ্যালয় সহকারী শিক্ষক নিয়োগ পরীক্ষার চূড়ান্ত ফলাফল।',
+                ],
             ];
         }
 
@@ -387,6 +392,7 @@ PROMPT;
     {
         if (empty($this->apiKey) || $this->apiKey === 'YOUR_GEMINI_API_KEY') {
             Log::warning('Gemini API key is not set. Using fallback logic.');
+
             return [];
         }
 
@@ -394,20 +400,20 @@ PROMPT;
 
         // List of models to try in order (starts with configured model, falls back to best stable models)
         $modelsToTry = array_unique([
-            $primaryModel, 
+            $primaryModel,
             'gemini-3.6-pro',
             'gemini-3.6-flash',
             'gemini-3.5-pro',
             'gemini-3.5-flash',
-            'gemini-2.5-pro', 
-            'gemini-2.5-flash', 
-            'gemini-1.5-pro', 
-            'gemini-1.5-flash', 
-            'gemini-2.0-flash'
+            'gemini-2.5-pro',
+            'gemini-2.5-flash',
+            'gemini-1.5-pro',
+            'gemini-1.5-flash',
+            'gemini-2.0-flash',
         ]);
 
         foreach ($modelsToTry as $modelName) {
-            $url = $this->baseUrl . $modelName . ':generateContent?key=' . $this->apiKey;
+            $url = $this->baseUrl.$modelName.':generateContent?key='.$this->apiKey;
 
             try {
                 $genConfig = [
@@ -423,11 +429,11 @@ PROMPT;
                     'contents' => [
                         [
                             'parts' => [
-                                ['text' => $prompt]
-                            ]
-                        ]
+                                ['text' => $prompt],
+                            ],
+                        ],
                     ],
-                    'generationConfig' => $genConfig
+                    'generationConfig' => $genConfig,
                 ];
 
                 if (!empty($tools)) {
@@ -441,7 +447,7 @@ PROMPT;
                 if ($response->successful()) {
                     $data = $response->json();
                     $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-                    
+
                     // 1. Direct JSON decode check
                     $parsed = json_decode($text, true);
                     if (is_array($parsed)) {
@@ -464,10 +470,10 @@ PROMPT;
                         }
                     }
                 } else {
-                    Log::error("Gemini API call failed with model {$modelName}: " . $response->body());
+                    Log::error("Gemini API call failed with model {$modelName}: ".$response->body());
                 }
             } catch (\Exception $e) {
-                Log::error("Gemini API Exception with model {$modelName}: " . $e->getMessage());
+                Log::error("Gemini API Exception with model {$modelName}: ".$e->getMessage());
             }
         }
 
@@ -481,26 +487,27 @@ PROMPT;
     {
         if (empty($this->apiKey) || $this->apiKey === 'YOUR_GEMINI_API_KEY') {
             Log::warning('Gemini API key is not set. Using fallback logic for file upload.');
+
             return [];
         }
 
         $primaryModel = $customModel ?? $this->model;
 
         $modelsToTry = array_unique([
-            $primaryModel, 
+            $primaryModel,
             'gemini-3.6-pro',
             'gemini-3.6-flash',
             'gemini-3.5-pro',
             'gemini-3.5-flash',
-            'gemini-2.5-pro', 
-            'gemini-2.5-flash', 
-            'gemini-1.5-pro', 
-            'gemini-1.5-flash', 
-            'gemini-2.0-flash'
+            'gemini-2.5-pro',
+            'gemini-2.5-flash',
+            'gemini-1.5-pro',
+            'gemini-1.5-flash',
+            'gemini-2.0-flash',
         ]);
 
         foreach ($modelsToTry as $modelName) {
-            $url = $this->baseUrl . $modelName . ':generateContent?key=' . $this->apiKey;
+            $url = $this->baseUrl.$modelName.':generateContent?key='.$this->apiKey;
 
             try {
                 $response = Http::withHeaders([
@@ -513,18 +520,18 @@ PROMPT;
                                     'inlineData' => [
                                         'mimeType' => $mimeType,
                                         'data' => $base64Data,
-                                    ]
+                                    ],
                                 ],
                                 [
-                                    'text' => $prompt
-                                ]
-                            ]
-                        ]
+                                    'text' => $prompt,
+                                ],
+                            ],
+                        ],
                     ],
                     'generationConfig' => [
                         'responseMimeType' => 'application/json',
                         'temperature' => 0.4,
-                    ]
+                    ],
                 ]);
 
                 if ($response->successful()) {
@@ -535,10 +542,10 @@ PROMPT;
                         return $parsed;
                     }
                 } else {
-                    Log::error("Gemini API file call failed with model {$modelName}: " . $response->body());
+                    Log::error("Gemini API file call failed with model {$modelName}: ".$response->body());
                 }
             } catch (\Exception $e) {
-                Log::error("Gemini API file Exception with model {$modelName}: " . $e->getMessage());
+                Log::error("Gemini API file Exception with model {$modelName}: ".$e->getMessage());
             }
         }
 
@@ -550,7 +557,7 @@ PROMPT;
      */
     public function extractTextFromDocx(string $filePath): ?string
     {
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         if ($zip->open($filePath) === true) {
             if (($index = $zip->locateName('word/document.xml')) !== false) {
                 $data = $zip->getFromIndex($index);
@@ -558,15 +565,16 @@ PROMPT;
 
                 // Format paragraph endings and table rows as newlines to preserve spacing
                 $cleanXml = str_replace(['</w:p>', '</w:tr>', '</w:tab>'], "\n", $data);
-                
+
                 // Strip w:t tags and keep only actual text content
                 $text = strip_tags($cleanXml);
-                
+
                 // Decode HTML/XML entity values if any
                 return html_entity_decode(trim($text), ENT_QUOTES, 'UTF-8');
             }
             $zip->close();
         }
+
         return null;
     }
 }

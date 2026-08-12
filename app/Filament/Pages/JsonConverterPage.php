@@ -22,16 +22,27 @@ class JsonConverterPage extends Page
     protected string $view = 'filament.pages.json-converter';
 
     public string $examType = 'BCS';
+
     public string $rawContent = '';
+
     public string $convertedJson = '';
+
     public int $itemsCount = 0;
+
     public string $statusMessage = '';
+
     public $singleFile; // Uploaded 1 file at a time from JS queue
+
     public bool $autoSaveToDb = true;
+
     public bool $isProcessing = false;
+
     public int $processedFileCount = 0;
+
     public int $totalFileCount = 0;
+
     public array $processingLog = [];
+
     public array $accumulatedItems = [];
 
     /**
@@ -56,6 +67,7 @@ class JsonConverterPage extends Page
     {
         if (!$this->singleFile) {
             $this->statusMessage = "Error: File upload payload missing for item {$currentIndex}.";
+
             return;
         }
 
@@ -78,24 +90,24 @@ class JsonConverterPage extends Page
             if (empty($parsedItems)) {
                 $parsedItems = [
                     [
-                        'id' => strtolower($this->examType) . '_' . time() . '_' . $currentIndex,
+                        'id' => strtolower($this->examType).'_'.time().'_'.$currentIndex,
                         'examType' => $this->examType,
-                        'title' => $this->examType . ' Viva Experience (' . $fileName . ')',
+                        'title' => $this->examType.' Viva Experience ('.$fileName.')',
                         'edition' => '২০২৬',
                         'year' => '২০২৬',
                         'candidateName' => 'Extracted Candidate',
                         'subject' => 'General / Major',
                         'board' => 'Viva Board',
-                        'choices' => [$this->examType . ' Cadre'],
+                        'choices' => [$this->examType.' Cadre'],
                         'duration' => '১৫-২০ মিনিট',
                         'result' => 'Recommended',
                         'experienceRating' => 'Good',
-                        'remarks' => 'Extracted from batch file: ' . $fileName,
+                        'remarks' => 'Extracted from batch file: '.$fileName,
                         'transcript' => [
                             ['speaker' => 'Chairman', 'text' => 'Introduce yourself and state your key qualifications.'],
-                            ['speaker' => 'Candidate', 'text' => 'Honorable Chairman sir, thank you for reviewing my file...']
-                        ]
-                    ]
+                            ['speaker' => 'Candidate', 'text' => 'Honorable Chairman sir, thank you for reviewing my file...'],
+                        ],
+                    ],
                 ];
             }
 
@@ -107,7 +119,7 @@ class JsonConverterPage extends Page
                     QuestionBank::create([
                         'item_id' => $item['id'] ?? null,
                         'exam_type' => $item['examType'] ?? $this->examType,
-                        'title' => $item['title'] ?? ($this->examType . ' Viva Experience'),
+                        'title' => $item['title'] ?? ($this->examType.' Viva Experience'),
                         'edition' => $item['edition'] ?? null,
                         'year' => $item['year'] ?? null,
                         'candidate_name' => $item['candidateName'] ?? null,
@@ -139,7 +151,7 @@ class JsonConverterPage extends Page
 
             $this->singleFile = null;
         } catch (\Exception $e) {
-            $this->processingLog[] = "File {$currentIndex}/{$totalCount}: Error - " . $e->getMessage();
+            $this->processingLog[] = "File {$currentIndex}/{$totalCount}: Error - ".$e->getMessage();
             $this->singleFile = null;
         }
     }
@@ -163,24 +175,24 @@ class JsonConverterPage extends Page
             if (empty($parsedItems)) {
                 $parsedItems = [
                     [
-                        'id' => strtolower($this->examType) . '_' . time(),
+                        'id' => strtolower($this->examType).'_'.time(),
                         'examType' => $this->examType,
-                        'title' => $this->examType . ' Viva Experience (Extracted)',
+                        'title' => $this->examType.' Viva Experience (Extracted)',
                         'edition' => '২০২৬',
                         'year' => '২০২৬',
                         'candidateName' => 'Extracted Candidate',
                         'subject' => 'General / Major',
                         'board' => 'Viva Board',
-                        'choices' => [$this->examType . ' Cadre'],
+                        'choices' => [$this->examType.' Cadre'],
                         'duration' => '১৫-২০ মিনিট',
                         'result' => 'Recommended',
                         'experienceRating' => 'Good',
                         'remarks' => 'Extracted via Gemini AI Digitizer',
                         'transcript' => [
                             ['speaker' => 'Chairman', 'text' => 'Introduce yourself and state your key qualifications.'],
-                            ['speaker' => 'Candidate', 'text' => 'Honorable Chairman sir, thank you for this opportunity...']
-                        ]
-                    ]
+                            ['speaker' => 'Candidate', 'text' => 'Honorable Chairman sir, thank you for this opportunity...'],
+                        ],
+                    ],
                 ];
             }
 
@@ -194,7 +206,7 @@ class JsonConverterPage extends Page
                     QuestionBank::create([
                         'item_id' => $item['id'] ?? null,
                         'exam_type' => $item['examType'] ?? $this->examType,
-                        'title' => $item['title'] ?? ($this->examType . ' Viva Experience'),
+                        'title' => $item['title'] ?? ($this->examType.' Viva Experience'),
                         'edition' => $item['edition'] ?? null,
                         'year' => $item['year'] ?? null,
                         'candidate_name' => $item['candidateName'] ?? null,
@@ -217,7 +229,7 @@ class JsonConverterPage extends Page
             }
         } catch (\Exception $e) {
             $this->isProcessing = false;
-            $this->statusMessage = 'Error during conversion: ' . $e->getMessage();
+            $this->statusMessage = 'Error during conversion: '.$e->getMessage();
         }
     }
 
@@ -225,12 +237,14 @@ class JsonConverterPage extends Page
     {
         if (empty($this->convertedJson)) {
             $this->statusMessage = 'No converted JSON data to save.';
+
             return;
         }
 
         $items = json_decode($this->convertedJson, true);
         if (!is_array($items)) {
             $this->statusMessage = 'Invalid JSON format.';
+
             return;
         }
 
@@ -239,7 +253,7 @@ class JsonConverterPage extends Page
             QuestionBank::create([
                 'item_id' => $item['id'] ?? null,
                 'exam_type' => $item['examType'] ?? $this->examType,
-                'title' => $item['title'] ?? ($this->examType . ' Viva Experience'),
+                'title' => $item['title'] ?? ($this->examType.' Viva Experience'),
                 'edition' => $item['edition'] ?? null,
                 'year' => $item['year'] ?? null,
                 'candidate_name' => $item['candidateName'] ?? null,

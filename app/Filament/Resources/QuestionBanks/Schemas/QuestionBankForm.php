@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\QuestionBanks\Schemas;
 
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -46,7 +46,7 @@ class QuestionBankForm
                     ->default('Good'),
                 Textarea::make('remarks')
                     ->placeholder('Additional notes or remarks...'),
-                
+
                 Repeater::make('transcript')
                     ->label('Transcript Conversation Sequence')
                     ->schema([
@@ -71,8 +71,8 @@ class QuestionBankForm
                     ->defaultItems(2)
                     ->cloneable()
                     ->reorderable()
-                    ->itemLabel(fn (array $state): ?string => ($state['speaker'] ?? 'Speaker') . ': ' . (isset($state['text']) ? Str::limit($state['text'], 60) : ''))
-                    ->helperText('Manage and reorder the conversation sequence. Click and drag items to change the sequence.')
+                    ->itemLabel(fn (array $state): ?string => ($state['speaker'] ?? 'Speaker').': '.(isset($state['text']) ? Str::limit($state['text'], 60) : ''))
+                    ->helperText('Manage and reorder the conversation sequence. Click and drag items to change the sequence.'),
             ]);
     }
 }

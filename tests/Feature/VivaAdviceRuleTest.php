@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use App\Models\VivaAdvice;
 use App\Models\VivaRule;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -60,7 +60,7 @@ class VivaAdviceRuleTest extends TestCase
         $responseFiltered->assertStatus(200);
         $data = $responseFiltered->json('data');
         $this->assertCount(2, $data);
-        
+
         $titles = collect($data)->pluck('title')->all();
         $this->assertContains('General Tip', $titles);
         $this->assertContains('BCS Specific Tip', $titles);

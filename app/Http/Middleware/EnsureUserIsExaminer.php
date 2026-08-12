@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Interviewer;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Interviewer;
 
 class EnsureUserIsExaminer
 {
@@ -23,6 +23,7 @@ class EnsureUserIsExaminer
         $exists = Interviewer::where('email', $user->email)->where('is_active', true)->exists();
         if (!$exists) {
             auth()->logout();
+
             return redirect()->route('filament.examiner.auth.login')->withErrors([
                 'email' => 'Access denied. Your email is not registered as an active examiner.',
             ]);

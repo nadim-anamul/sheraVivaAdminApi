@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\VivaApiController;
 use App\Http\Controllers\JobUpdateApiController;
+use App\Http\Controllers\VivaApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,9 +39,9 @@ Route::middleware('api.key')->group(function () {
         Route::get('/user', function (Request $request) {
             return $request->user();
         });
-        
+
         Route::post('/auth/logout', [AuthController::class, 'logout']);
-        
+
         Route::post('/viva/sessions', [VivaApiController::class, 'saveSession']);
         Route::get('/viva/sessions', [VivaApiController::class, 'getHistory']);
         Route::get('/viva/sessions/{id}/evaluation', [VivaApiController::class, 'getEvaluation']);

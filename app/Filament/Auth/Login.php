@@ -25,7 +25,7 @@ class Login extends BaseLogin
             $panel = Filament::getCurrentOrDefaultPanel();
             $canAccess = $user instanceof FilamentUser && $user->canAccessPanel($panel);
 
-            if (! $canAccess) {
+            if (!$canAccess) {
                 $guard->logout();
 
                 if (request()->hasSession()) {

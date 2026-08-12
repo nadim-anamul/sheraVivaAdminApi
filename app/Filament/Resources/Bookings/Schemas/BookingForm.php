@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Bookings\Schemas;
 
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class BookingForm
@@ -15,7 +15,7 @@ class BookingForm
             ->components([
                 Select::make('slot_id')
                     ->relationship('slot', 'id')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "Slot #{$record->id} ({$record->start_time} - {$record->end_time}) by " . ($record->interviewer->name ?? 'Unknown'))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "Slot #{$record->id} ({$record->start_time} - {$record->end_time}) by ".($record->interviewer->name ?? 'Unknown'))
                     ->required()
                     ->helperText('Select the specific sliced time slot.'),
                 Select::make('candidate_id')

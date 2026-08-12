@@ -13,7 +13,7 @@ class CreateBooking extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (empty($data['livekit_room_name'])) {
-            $data['livekit_room_name'] = 'viva_room_' . Str::lower(Str::random(8));
+            $data['livekit_room_name'] = 'viva_room_'.Str::lower(Str::random(8));
         }
 
         return $data;

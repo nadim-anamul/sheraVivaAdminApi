@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\JobUpdates\Schemas;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class JobUpdateForm
@@ -36,7 +36,7 @@ class JobUpdateForm
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
                         if ($state) {
-                            $set('file_url', asset('storage/' . $state));
+                            $set('file_url', asset('storage/'.$state));
                             $set('file_size', '1.0 MB'); // Default fallback size for manual uploads
                         }
                     })

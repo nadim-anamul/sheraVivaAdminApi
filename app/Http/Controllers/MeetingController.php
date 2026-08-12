@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Agence104\LiveKit\AccessToken;
 use Agence104\LiveKit\AccessTokenOptions;
 use Agence104\LiveKit\VideoGrant;
+use App\Models\Booking;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MeetingController extends Controller
 {
@@ -65,15 +65,15 @@ class MeetingController extends Controller
         // 3. Ensure payment is completed
         if ($booking->payment_status !== 'success') {
             return redirect()->route('dashboard')->withErrors([
-                'message' => 'Payment has not been completed for this viva slot.'
+                'message' => 'Payment has not been completed for this viva slot.',
             ]);
         }
 
         // 4. Validate time window (Bypass in local/testing envs)
         $now = now();
         $dateStr = $booking->slot->availabilityBlock->date->format('Y-m-d');
-        $startTime = Carbon::parse($dateStr . ' ' . $booking->slot->start_time);
-        $endTime = Carbon::parse($dateStr . ' ' . $booking->slot->end_time);
+        $startTime = Carbon::parse($dateStr.' '.$booking->slot->start_time);
+        $endTime = Carbon::parse($dateStr.' '.$booking->slot->end_time);
 
         // Allow joining 15 minutes early
         $bufferStartTime = $startTime->copy()->subMinutes(15);
@@ -81,13 +81,13 @@ class MeetingController extends Controller
         if (app()->environment() === 'production') {
             if ($now->lt($bufferStartTime)) {
                 return redirect()->route('dashboard')->withErrors([
-                    'message' => 'The viva session is not active yet. You can join starting 15 minutes before the scheduled time (' . $startTime->format('h:i A') . ').'
+                    'message' => 'The viva session is not active yet. You can join starting 15 minutes before the scheduled time ('.$startTime->format('h:i A').').',
                 ]);
             }
 
             if ($now->gt($endTime)) {
                 return redirect()->route('dashboard')->withErrors([
-                    'message' => 'This viva session has already expired.'
+                    'message' => 'This viva session has already expired.',
                 ]);
             }
         }
@@ -98,16 +98,16 @@ class MeetingController extends Controller
             $apiSecret = env('LIVEKIT_API_SECRET', 'secret_key_must_be_at_least_32_chars_long');
             $livekitUrl = env('LIVEKIT_URL', 'http://localhost:7880');
 
-            $identity = $isExaminer ? 'examiner_' . $user->id : 'candidate_' . $user->id;
-            $displayName = $isExaminer 
-                ? 'Board Panelist (' . $booking->interviewer->name . ')' 
-                : 'Candidate (' . $user->name . ')';
+            $identity = $isExaminer ? 'examiner_'.$user->id : 'candidate_'.$user->id;
+            $displayName = $isExaminer
+                ? 'Board Panelist ('.$booking->interviewer->name.')'
+                : 'Candidate ('.$user->name.')';
 
-            $tokenOptions = (new AccessTokenOptions())
+            $tokenOptions = (new AccessTokenOptions)
                 ->setIdentity($identity)
                 ->setName($displayName);
 
-            $videoGrant = (new VideoGrant())
+            $videoGrant = (new VideoGrant)
                 ->setRoomJoin(true)
                 ->setRoomName($booking->livekit_room_name)
                 ->setCanPublish(true)
@@ -128,7 +128,7 @@ class MeetingController extends Controller
             return view('viva.meeting', compact('booking', 'token', 'livekitUrl', 'role', 'isExaminer'));
 
         } catch (\Exception $e) {
-            abort(500, 'Failed to initialize LiveKit token: ' . $e->getMessage());
+            abort(500, 'Failed to initialize LiveKit token: '.$e->getMessage());
         }
     }
 }

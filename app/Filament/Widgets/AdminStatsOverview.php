@@ -2,9 +2,9 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\User;
-use App\Models\Interviewer;
 use App\Models\Booking;
+use App\Models\Interviewer;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -14,14 +14,14 @@ class AdminStatsOverview extends BaseWidget
     {
         $adminEmail = 'admin@seraviva.com';
         $examinerEmails = Interviewer::pluck('email')->toArray();
-        
+
         $totalCandidates = User::where('email', '!=', $adminEmail)
             ->whereNotIn('email', $examinerEmails)
             ->count();
 
         $totalExaminers = Interviewer::count();
         $totalBookings = Booking::count();
-        
+
         $totalRevenue = Booking::where('payment_status', 'success')
             ->sum('amount_paid');
 
@@ -38,7 +38,7 @@ class AdminStatsOverview extends BaseWidget
                 ->description('Total slots requested')
                 ->descriptionIcon('heroicon-m-ticket')
                 ->color('primary'),
-            Stat::make('System Revenue', number_format($totalRevenue) . ' BDT')
+            Stat::make('System Revenue', number_format($totalRevenue).' BDT')
                 ->description('Paid checkout sessions')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('warning'),

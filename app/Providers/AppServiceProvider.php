@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
             $adminEmail = config('services.admin.email');
             $adminPassword = config('services.admin.password');
 
-            if (! $adminEmail || ! $adminPassword) {
+            if (!$adminEmail || !$adminPassword) {
                 return;
             }
 

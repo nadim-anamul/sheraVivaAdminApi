@@ -1,22 +1,26 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CandidateAuthController;
 use App\Http\Controllers\Candidate\DashboardController;
+use App\Http\Controllers\Candidate\PracticeController;
+use App\Http\Controllers\MeetingController;
+use App\Models\Interviewer;
+use App\Models\JobUpdate;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $interviewers = \App\Models\Interviewer::where('is_active', true)
-        ->withCount(['slots' => function($q) {
+    $interviewers = Interviewer::where('is_active', true)
+        ->withCount(['slots' => function ($q) {
             $q->where('status', 'available');
         }])
         ->get();
 
-    $circulars = \App\Models\JobUpdate::where('type', 'circular')
+    $circulars = JobUpdate::where('type', 'circular')
         ->orderBy('published_date', 'desc')
         ->limit(4)
         ->get();
 
-    $results = \App\Models\JobUpdate::where('type', 'result')
+    $results = JobUpdate::where('type', 'result')
         ->orderBy('published_date', 'desc')
         ->limit(4)
         ->get();
@@ -34,11 +38,11 @@ Route::post('/logout', [CandidateAuthController::class, 'logout'])->name('logout
 // Candidate Dashboard & Features Routes (Protected)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/viva/practice', [App\Http\Controllers\Candidate\PracticeController::class, 'showPracticePage'])->name('viva.practice');
-    Route::get('/library', [App\Http\Controllers\Candidate\PracticeController::class, 'showLibraryPage'])->name('candidate.library');
-    Route::get('/job-updates', [App\Http\Controllers\Candidate\PracticeController::class, 'showJobUpdatesPage'])->name('candidate.job_updates');
-    Route::get('/guidelines', [App\Http\Controllers\Candidate\PracticeController::class, 'showGuidelinesPage'])->name('candidate.guidelines');
-    Route::get('/viva/join', [App\Http\Controllers\MeetingController::class, 'showJoinForm'])->name('viva.join.form');
-    Route::post('/viva/join', [App\Http\Controllers\MeetingController::class, 'handleJoinForm'])->name('viva.join.handle');
-    Route::get('/viva/meeting/{meeting_code}', [App\Http\Controllers\MeetingController::class, 'join'])->name('viva.meeting');
+    Route::get('/viva/practice', [PracticeController::class, 'showPracticePage'])->name('viva.practice');
+    Route::get('/library', [PracticeController::class, 'showLibraryPage'])->name('candidate.library');
+    Route::get('/job-updates', [PracticeController::class, 'showJobUpdatesPage'])->name('candidate.job_updates');
+    Route::get('/guidelines', [PracticeController::class, 'showGuidelinesPage'])->name('candidate.guidelines');
+    Route::get('/viva/join', [MeetingController::class, 'showJoinForm'])->name('viva.join.form');
+    Route::post('/viva/join', [MeetingController::class, 'handleJoinForm'])->name('viva.join.handle');
+    Route::get('/viva/meeting/{meeting_code}', [MeetingController::class, 'join'])->name('viva.meeting');
 });

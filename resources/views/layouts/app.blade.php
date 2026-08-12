@@ -13,313 +13,98 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        :root {
-            --bg-obsidian: #090D1A;
-            --bg-card: rgba(17, 24, 39, 0.7);
-            --border-glow: rgba(255, 255, 255, 0.08);
-            --primary-emerald: #10B981;
-            --primary-glow: rgba(16, 185, 129, 0.15);
-            --text-main: #F3F4F6;
-            --text-muted: #9CA3AF;
-            --accent-blue: #3B82F6;
-            --accent-orange: #F59E0B;
-            --font-sans: 'Inter', 'Hind Siliguri', sans-serif;
-            --font-display: 'Outfit', 'Hind Siliguri', sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-obsidian);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            overflow-x: hidden;
-            line-height: 1.6;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 40%);
-            background-attachment: fixed;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Utility Scrollbars */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-obsidian);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-emerald);
-        }
-
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-            width: 100%;
-        }
-
-        /* Glassmorphic Header */
-        header {
-            background: rgba(9, 13, 26, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-glow);
-            padding: 16px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 24px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .logo span {
-            color: var(--primary-emerald);
-            background: linear-gradient(135deg, var(--primary-emerald), #6EE7B7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            transition: color 0.2s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--text-main);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-emerald), #059669);
-            color: #fff !important;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-main) !important;
-            border: 1px solid var(--border-glow);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            padding: 40px 0;
-        }
-
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border-glow);
-            padding: 24px 0;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 13px;
-            margin-top: auto;
-        }
-
-        /* Form Styles */
-        .auth-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-glow);
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 480px;
-            width: 100%;
-            margin: 40px auto;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .auth-card h2 {
-            font-family: var(--font-display);
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            color: #fff;
-            text-align: center;
-        }
-
-        .auth-card p.subtitle {
-            color: var(--text-muted);
-            text-align: center;
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .form-group input {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-glow);
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus {
-            border-color: var(--primary-emerald);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
-        }
-
-        .text-error {
-            color: #EF4444;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .auth-footer {
-            margin-top: 24px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .auth-footer a {
-            color: var(--primary-emerald);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .auth-footer a:hover {
-            text-decoration: underline;
-        }
-        
-        .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #F87171;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-    </style>
+    <!-- Vite compiled assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     @yield('styles')
 </head>
-<body>
+<body class="bg-bg-obsidian text-text-main font-sans min-h-screen flex flex-col antialiased">
 
-    <header>
-        <div class="container nav-wrapper">
-            <a href="/" class="logo">
-                <i class="fa-solid fa-graduation-cap"></i> Shera <span>Viva</span>
+    <!-- Glassmorphic Header -->
+    <header id="header" class="sticky top-0 z-50 bg-bg-obsidian/85 backdrop-blur-md border-b border-white/5 py-4 transition-all duration-300">
+        <div class="max-w-[1200px] mx-auto px-6 w-full flex items-center justify-between">
+            <a href="/" class="font-display font-extrabold text-2xl text-white flex items-center gap-2 no-underline hover:opacity-90">
+                <i class="fa-solid fa-graduation-cap text-primary-emerald"></i> Shera <span class="bg-gradient-to-r from-primary-emerald to-emerald-300 bg-clip-text text-transparent">Viva</span>
             </a>
             
-            <nav class="nav-links">
-                <a href="/">Home</a>
+            <!-- Mobile Toggler Button -->
+            <button id="mobile-menu-toggle" class="lg:hidden text-text-muted hover:text-white focus:outline-none transition-colors p-1" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+            
+            <!-- Nav Links -->
+            <nav id="navbar-links" class="hidden lg:flex items-center gap-7 absolute lg:static top-[73px] left-0 w-full lg:w-auto bg-bg-obsidian lg:bg-transparent border-b lg:border-none border-white/5 p-6 lg:p-0 flex-col lg:flex-row items-stretch lg:items-center">
+                <a href="/" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Home</a>
                 @auth
-                    <a href="/dashboard">Dashboard</a>
-                    <a href="/viva/practice" style="color: var(--primary-emerald); font-weight: 700;"><i class="fa-solid fa-robot"></i> Practice AI Viva</a>
-                    <a href="/library">Question Library</a>
-                    <a href="/job-updates">Job Updates</a>
-                    <a href="/guidelines">Viva Guidelines</a>
-                    <form action="/logout" method="POST" style="display: inline;">
+                    <a href="/dashboard" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Dashboard</a>
+                    <a href="/viva/practice" class="text-primary-emerald hover:text-emerald-300 transition-colors font-bold text-sm no-underline flex items-center gap-1.5 py-2 lg:py-0">
+                        <i class="fa-solid fa-robot"></i> Practice AI Viva
+                    </a>
+                    <a href="/library" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Question Library</a>
+                    <a href="/job-updates" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Job Updates</a>
+                    <a href="/guidelines" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Viva Guidelines</a>
+                    <form action="/logout" method="POST" class="inline py-2 lg:py-0">
                         @csrf
-                        <button type="submit" class="btn-secondary" style="padding: 6px 14px; font-size: 12px;">
+                        <button type="submit" class="btn-secondary w-full lg:w-auto py-1.5 px-3.5 text-xs">
                             <i class="fa-solid fa-right-from-bracket"></i> Logout
                         </button>
                     </form>
                 @else
-                    <a href="/library">Question Library</a>
-                    <a href="/job-updates">Job Updates</a>
-                    <a href="/guidelines">Viva Guidelines</a>
-                    <a href="/login" class="btn-secondary">Log in</a>
-                    <a href="/register" class="btn-primary">Get Started</a>
+                    <a href="/library" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Question Library</a>
+                    <a href="/job-updates" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Job Updates</a>
+                    <a href="/guidelines" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Viva Guidelines</a>
+                    <div class="flex flex-col lg:flex-row gap-3 mt-4 lg:mt-0">
+                        <a href="/login" class="btn-secondary w-full lg:w-auto text-center justify-center">Log in</a>
+                        <a href="/register" class="btn-primary w-full lg:w-auto text-center justify-center">Get Started</a>
+                    </div>
                 @endauth
             </nav>
         </div>
     </header>
 
-    <main>
-        <div class="container">
-            @yield('content')
-        </div>
+    <!-- Main Content Container -->
+    <main class="flex-1">
+        @yield('content')
     </main>
 
-    <footer>
-        <div class="container">
-            &copy; 2026 Shera Viva. All Rights Reserved. Prepare with confidence.
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 bg-black/10 mt-auto text-xs">
+        <div class="max-w-[1200px] mx-auto px-6 w-full flex flex-col md:flex-row items-center justify-between gap-6">
+            <a href="/" class="font-display font-extrabold text-xl text-white no-underline">
+                Shera <span class="text-primary-emerald">Viva</span>
+            </a>
+            
+            <p class="text-text-muted text-center md:text-left">&copy; 2026 Shera Viva mock portal. All rights reserved.</p>
+
+            <div class="flex items-center gap-5">
+                <a href="/viva/practice" class="text-text-muted hover:text-white no-underline transition-colors">Practice AI</a>
+                <a href="/library" class="text-text-muted hover:text-white no-underline transition-colors">Question Library</a>
+                <a href="/job-updates" class="text-text-muted hover:text-white no-underline transition-colors">Job Updates</a>
+                <a href="/guidelines" class="text-text-muted hover:text-white no-underline transition-colors">Guidelines</a>
+                <a href="/admin" class="text-text-muted hover:text-white no-underline transition-colors">Admin Panel</a>
+            </div>
         </div>
     </footer>
+
+    <!-- Mobile menu toggle script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const menu = document.getElementById('navbar-links');
+            
+            if (toggle && menu) {
+                toggle.addEventListener('click', function () {
+                    menu.classList.toggle('hidden');
+                    menu.classList.toggle('flex');
+                    const icon = toggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-bars');
+                        icon.classList.toggle('fa-xmark');
+                    }
+                });
+            }
+        });
+    </script>
 
     @yield('scripts')
 </body>

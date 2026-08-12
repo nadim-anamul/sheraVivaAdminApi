@@ -7,18 +7,17 @@ use App\Filament\Examiner\Resources\AvailabilityBlockResource\Pages\EditAvailabi
 use App\Filament\Examiner\Resources\AvailabilityBlockResource\Pages\ListAvailabilityBlocks;
 use App\Models\AvailabilityBlock;
 use App\Models\Interviewer;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class AvailabilityBlockResource extends Resource
@@ -93,6 +92,7 @@ class AvailabilityBlockResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $interviewerId = Interviewer::where('email', auth()->user()->email)->value('id') ?? 0;
+
         return parent::getEloquentQuery()->where('interviewer_id', $interviewerId);
     }
 
