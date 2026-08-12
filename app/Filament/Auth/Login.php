@@ -15,6 +15,8 @@ use Illuminate\Auth\SessionGuard;
  */
 class Login extends BaseLogin
 {
+    protected string $view = 'filament.pages.auth.login';
+
     public function mount(): void
     {
         /** @var SessionGuard $guard */

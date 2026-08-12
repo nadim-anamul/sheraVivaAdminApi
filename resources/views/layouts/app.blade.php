@@ -3,7 +3,29 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Shera Viva | Mock Viva Portal')</title>
+    <title>@yield('title', 'Shera Viva | Ultimate Government Job Mock Viva & AI Portal')</title>
+    
+    <!-- SEO Optimization Meta Tags -->
+    <meta name="description" content="Shera Viva is the ultimate government job mock interview and oral board preparation portal in Bangladesh. Practice with real-time AI simulators or book live slots.">
+    <meta name="keywords" content="shera viva, mock viva, job viva, bcs viva, bank job viva, government job preparation, speech analytics, ai interview, livekit, bangladesh jobs">
+    <link rel="canonical" href="{{ url()->current() }}">
+    
+    <!-- Open Graph (OG) Social Sharing -->
+    <meta property="og:site_name" content="Shera Viva">
+    <meta property="og:title" content="@yield('title', 'Shera Viva | Ultimate Government Job Mock Viva & AI Portal')">
+    <meta property="og:description" content="Practice BCS & Bank oral boards with real-time speech analytics and instant AI scorecards. Book live face-to-face sessions with retired examiners.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('favicon.svg') }}">
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="@yield('title', 'Shera Viva | Ultimate Government Job Mock Viva & AI Portal')">
+    <meta name="twitter:description" content="Practice BCS & Bank oral boards with real-time speech analytics and instant AI scorecards.">
+    <meta name="twitter:image" content="{{ asset('favicon.svg') }}">
+    
+    <!-- Relevant SVG Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     
     <!-- Premium Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +39,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     @yield('styles')
+    @filamentStyles
 </head>
 <body class="bg-bg-obsidian text-text-main font-sans min-h-screen flex flex-col antialiased">
 
@@ -107,5 +130,6 @@
     </script>
 
     @yield('scripts')
+    @filamentScripts
 </body>
 </html>
