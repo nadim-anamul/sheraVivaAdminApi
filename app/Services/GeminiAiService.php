@@ -255,13 +255,24 @@ PROMPT;
     }
 
     /**
-     * Breakdown all QuestionBank records into lightweight micro-batches (max 15 records per HTTP step).
+     * Breakdown QuestionBank records into lightweight micro-batches (max 15 records per HTTP step).
+     * If $onlyNewRecords is true, only processes QuestionBank items updated after the last synthesis run.
      */
-    public function getSynthesisBatches(?string $targetExamType = null): array
+    public function getSynthesisBatches(?string $targetExamType = null, bool $onlyNewRecords = true): array
     {
         $query = QuestionBank::query();
         if (!empty($targetExamType) && $targetExamType !== 'All') {
             $query->where('exam_type', $targetExamType);
+        }
+
+        if ($onlyNewRecords) {
+            $lastSynthesized = ExamKnowledgeBank::when(!empty($targetExamType) && $targetExamType !== 'All', function ($q) use ($targetExamType) {
+                $q->where('exam_type', $targetExamType);
+            })->max('last_synthesized_at');
+
+            if ($lastSynthesized) {
+                $query->where('updated_at', '>', $lastSynthesized);
+            }
         }
 
         $allRecords = $query->get();
@@ -287,7 +298,7 @@ PROMPT;
                 $chunks = $catRecords->chunk(15);
                 foreach ($chunks as $chunkIndex => $chunkRecords) {
                     $label = $chunks->count() > 1
-                        ? "{$examType} - {$subjectCat} (Part ".($chunkIndex + 1).'/'.$chunks->count().')'
+                        ? "{$examType} - {$subjectCat} (Batch ".($chunkIndex + 1).'/'.$chunks->count().')'
                         : "{$examType} - {$subjectCat}";
 
                     $batches[] = [

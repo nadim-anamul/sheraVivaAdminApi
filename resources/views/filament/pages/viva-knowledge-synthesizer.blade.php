@@ -106,18 +106,16 @@
             totalCategories: 0,
             progressPercent: 0,
 
-            async runBatchSynthesis(targetExam = null) {
+            async runBatchSynthesis(targetExam = null, onlyNewRecords = true) {
                 if (this.isBatchRunning) return;
                 this.isBatchRunning = true;
                 this.currentIndex = 0;
                 this.progressPercent = 0;
 
-                await $wire.startBatchSynthesis(targetExam);
+                const queue = await $wire.startBatchSynthesis(targetExam, onlyNewRecords);
+                this.totalCategories = queue ? queue.length : 0;
 
-                const queue = Array.from($wire.pendingBatches);
-                this.totalCategories = queue.length;
-
-                if (queue.length === 0) {
+                if (!queue || queue.length === 0) {
                     this.isBatchRunning = false;
                     return;
                 }
@@ -153,24 +151,37 @@
                     </div>
                 </div>
 
-                <button 
-                    @click="runBatchSynthesis(null)" 
-                    :disabled="isBatchRunning"
-                    type="button" 
-                    class="btn-emerald"
-                >
-                    <template x-if="!isBatchRunning">
-                        <span style="display: inline-flex; align-items: center; gap: 8px;">
-                            <svg style="width: 18px; height: 18px; color: #ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                            Synthesize All Exam Matrices
-                        </span>
-                    </template>
-                    <template x-if="isBatchRunning">
-                        <span style="display: inline-flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid fa-spinner fa-spin"></i> Compiling <span x-text="currentCategory"></span>... (<span x-text="currentIndex"></span>/<span x-text="totalCategories"></span>)
-                        </span>
-                    </template>
-                </button>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <!-- Default Action: Incremental Synthesis (Only New Records) -->
+                    <button 
+                        @click="runBatchSynthesis(null, true)" 
+                        :disabled="isBatchRunning"
+                        type="button" 
+                        class="btn-emerald"
+                    >
+                        <template x-if="!isBatchRunning">
+                            <span style="display: inline-flex; align-items: center; gap: 8px;">
+                                <svg style="width: 18px; height: 18px; color: #ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                                Synthesize New & Updated Records
+                            </span>
+                        </template>
+                        <template x-if="isBatchRunning">
+                            <span style="display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Compiling <span x-text="currentCategory"></span>... (<span x-text="currentIndex"></span>/<span x-text="totalCategories"></span>)
+                            </span>
+                        </template>
+                    </button>
+
+                    <!-- Force Full Re-Synthesis Action -->
+                    <button 
+                        @click="runBatchSynthesis(null, false)" 
+                        :disabled="isBatchRunning"
+                        type="button" 
+                        style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;"
+                    >
+                        <i class="fa-solid fa-rotate"></i> Re-Synthesize All
+                    </button>
+                </div>
             </div>
 
             <!-- Active Batch Synthesis Progress -->
@@ -240,9 +251,9 @@
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: #F9FAFB; padding: 16px; border-radius: 12px; border: 1px solid #E5E7EB;" class="dark:bg-gray-900/70 dark:border-gray-800">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #6B7280; letter-spacing: 0.03em;">Quick Synthesis Actions:</span>
-                <button @click="runBatchSynthesis('BCS')" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-gavel"></i> Synthesize BCS</button>
-                <button @click="runBatchSynthesis('Bank')" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-building-columns"></i> Synthesize Bank</button>
-                <button @click="runBatchSynthesis('Primary')" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-school"></i> Synthesize Primary</button>
+                <button @click="runBatchSynthesis('BCS', true)" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-gavel"></i> Synthesize BCS</button>
+                <button @click="runBatchSynthesis('Bank', true)" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-building-columns"></i> Synthesize Bank</button>
+                <button @click="runBatchSynthesis('Primary', true)" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-school"></i> Synthesize Primary</button>
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px;">

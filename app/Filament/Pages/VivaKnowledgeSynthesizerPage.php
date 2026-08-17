@@ -29,38 +29,50 @@ class VivaKnowledgeSynthesizerPage extends Page
 
     public int $totalStepCount = 0;
 
-    public array $pendingBatches = [];
+    public int $pendingBatchesCount = 0;
 
     /**
      * Start the micro-batch queue synthesis.
      */
-    public function startBatchSynthesis(GeminiAiService $gemini, ?string $examType = null): void
+    public function startBatchSynthesis(GeminiAiService $gemini, ?string $examType = null, bool $onlyNewRecords = true): array
     {
         $this->isSynthesizing = true;
-        $this->pendingBatches = $gemini->getSynthesisBatches($examType);
-        $this->totalStepCount = count($this->pendingBatches);
+        $batches = $gemini->getSynthesisBatches($examType, $onlyNewRecords);
+
+        session()->put('viva_synth_pending_batches', $batches);
+        $this->pendingBatchesCount = count($batches);
+        $this->totalStepCount = count($batches);
         $this->currentStepIndex = 0;
 
         if ($this->totalStepCount === 0) {
             $this->isSynthesizing = false;
-            $this->statusMessage = 'No Question Bank records found to synthesize.';
+            $this->statusMessage = $onlyNewRecords
+                ? 'All Question Bank records are up to date! No new un-synthesized items found.'
+                : 'No Question Bank records found to synthesize.';
 
-            return;
+            return [];
         }
 
         $this->statusMessage = "Starting synthesis across {$this->totalStepCount} micro-batches...";
+
+        // Return minimal batch metadata array (labels only) to frontend to avoid payload bloat
+        return array_map(function ($b) {
+            return ['label' => $b['label'] ?? 'Micro-Batch'];
+        }, $batches);
     }
 
     /**
-     * Process ONE single micro-batch step safely within ~2.5 seconds.
+     * Process ONE single micro-batch step safely from session memory.
      */
     public function processMicroBatchStep(GeminiAiService $gemini, int $batchIndex): void
     {
-        if (!isset($this->pendingBatches[$batchIndex])) {
+        $batches = session('viva_synth_pending_batches', []);
+
+        if (!isset($batches[$batchIndex])) {
             return;
         }
 
-        $batch = $this->pendingBatches[$batchIndex];
+        $batch = $batches[$batchIndex];
 
         try {
             $gemini->synthesizeMicroBatch($batch);
@@ -69,6 +81,7 @@ class VivaKnowledgeSynthesizerPage extends Page
             if ($this->currentStepIndex >= $this->totalStepCount) {
                 $this->isSynthesizing = false;
                 $this->statusMessage = "COMPLETED! Synthesized all {$this->totalStepCount} micro-batches successfully!";
+                session()->forget('viva_synth_pending_batches');
             } else {
                 $this->statusMessage = "Synthesized {$batch['label']} ({$this->currentStepIndex}/{$this->totalStepCount}). Processing next batch...";
             }
@@ -77,6 +90,7 @@ class VivaKnowledgeSynthesizerPage extends Page
             $this->statusMessage = "Error synthesizing {$batch['label']}: ".$e->getMessage();
             if ($this->currentStepIndex >= $this->totalStepCount) {
                 $this->isSynthesizing = false;
+                session()->forget('viva_synth_pending_batches');
             }
         }
     }
