@@ -7,7 +7,19 @@
 <!-- Welcome Banner -->
 <div class="bg-gradient-to-r from-primary-emerald/15 to-accent-blue/10 border border-border-glow rounded-2xl p-8 mb-8 relative overflow-hidden">
     <h1 class="font-display text-2xl lg:text-3xl font-extrabold mb-2 text-white">Welcome back, {{ Auth::user()->name }}!</h1>
-    <p class="text-text-muted text-sm lg:text-base">Check your booked slots, view scores and analytical feedback reviews from board panel examiners.</p>
+    <p class="text-text-muted text-sm lg:text-base mb-4">Check your available AI credits, booked slots, view scores and analytical feedback reviews.</p>
+    
+    <div class="flex flex-wrap gap-3">
+        <a href="{{ route('viva.practice') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition inline-flex items-center gap-2">
+            <i class="fa-solid fa-play"></i> Start AI Mock Viva
+        </a>
+        <a href="{{ route('candidate.packages') }}" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition inline-flex items-center gap-2">
+            <i class="fa-solid fa-coins"></i> {{ Auth::user()->ai_viva_credits }} AI Credits (Buy Packages)
+        </a>
+        <a href="{{ route('candidate.live_vivas') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition inline-flex items-center gap-2">
+            <i class="fa-solid fa-video"></i> Human Live Vivas & Meet
+        </a>
+    </div>
 </div>
 
 <!-- Stats Grid -->

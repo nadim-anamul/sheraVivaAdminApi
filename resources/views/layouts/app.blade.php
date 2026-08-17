@@ -60,7 +60,7 @@
                 <a href="/" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Home</a>
                 @auth
                     <a href="/dashboard" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Dashboard</a>
-                    <a href="/viva/practice" class="text-primary-emerald hover:text-emerald-300 transition-colors font-bold text-sm no-underline flex items-center gap-1.5 py-2 lg:py-0">
+                    <a href="/dashboard/ai-simulator" class="text-primary-emerald hover:text-emerald-300 transition-colors font-bold text-sm no-underline flex items-center gap-1.5 py-2 lg:py-0">
                         <i class="fa-solid fa-robot"></i> Practice AI Viva
                     </a>
                     <a href="/library" class="text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">Question Library</a>
@@ -100,10 +100,10 @@
             <p class="text-text-muted text-center md:text-left">&copy; 2026 Shera Viva mock portal. All rights reserved.</p>
 
             <div class="flex items-center gap-5">
-                <a href="/viva/practice" class="text-text-muted hover:text-white no-underline transition-colors">Practice AI</a>
+                <a href="/dashboard/ai-simulator" class="text-text-muted hover:text-white no-underline transition-colors">Practice AI</a>
                 <a href="/library" class="text-text-muted hover:text-white no-underline transition-colors">Question Library</a>
-                <a href="/job-updates" class="text-text-muted hover:text-white no-underline transition-colors">Job Updates</a>
-                <a href="/guidelines" class="text-text-muted hover:text-white no-underline transition-colors">Guidelines</a>
+                <a href="/privacy-policy" class="text-text-muted hover:text-white no-underline transition-colors">Privacy Policy</a>
+                <a href="/terms-of-service" class="text-text-muted hover:text-white no-underline transition-colors">Terms of Service</a>
                 <a href="/admin" class="text-text-muted hover:text-white no-underline transition-colors">Admin Panel</a>
             </div>
         </div>

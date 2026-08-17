@@ -176,8 +176,15 @@ class AiSimulatorPage extends Page
             'candidateCv' => 'required|string|min:10',
         ]);
 
+        $user = auth()->user();
+        if ($user && $user->role !== 'admin' && $user->ai_viva_credits <= 0) {
+            $this->statusMessage = 'You have 0 AI Mock Viva credits remaining! Please subscribe to a package bundle (e.g. 10 Vivas for 100 BDT) to continue practice.';
+
+            return;
+        }
+
         $this->position = $this->choice1;
-        $this->statusMessage = 'Assembling 10-20 min BPSC Board and loading candidate preference choices (1 to 7)...';
+        $this->statusMessage = 'Assembling 10-20 min Board and loading candidate preferences (1 to 7)...';
         $this->transcriptHistory = [];
         $this->currentEvaluation = null;
         $this->finalEvaluation = null;
@@ -186,6 +193,10 @@ class AiSimulatorPage extends Page
         $this->isConcluded = false;
 
         try {
+            // Deduct 1 credit upon session start
+            if ($user && $user->role !== 'admin') {
+                $user->decrement('ai_viva_credits');
+            }
             $response = $gemini->generateVivaQuestion(
                 "{$this->examType} Cadre Preference Choice Viva Board",
                 [],

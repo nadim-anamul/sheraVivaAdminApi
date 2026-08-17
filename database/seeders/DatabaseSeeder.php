@@ -10,9 +10,11 @@ use App\Models\MockSession;
 use App\Models\QuestionBank;
 use App\Models\SessionEvaluation;
 use App\Models\Slot;
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\VivaAdvice;
 use App\Models\VivaCategory;
+use App\Models\VivaPackage;
 use App\Models\VivaRule;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -38,11 +40,62 @@ class DatabaseSeeder extends Seeder
         );
 
         // 2. Seed a Default Candidate User for Mobile App testing
-        $candidate = User::create([
-            'name' => 'Nadim Chowdhury',
-            'email' => 'candidate@seraviva.com',
-            'password' => 'password',
-        ]);
+        $candidate = User::updateOrCreate(
+            ['email' => 'candidate@seraviva.com'],
+            [
+                'name' => 'Nadim Chowdhury',
+                'password' => 'password',
+                'ai_viva_credits' => 1,
+            ]
+        );
+
+        // 2b. Seed System Settings & Packages
+        if (SystemSetting::where('key', 'free_ai_viva_credits')->doesntExist()) {
+            SystemSetting::set('free_ai_viva_credits', 1, 'Default Free AI Mock Viva credits granted upon candidate registration');
+            SystemSetting::set('bkash_merchant_number', '01700000000', 'Official bKash Send Money / Merchant Account Number');
+            SystemSetting::set('bkash_personal_number', '01800000000', 'Official bKash Personal Send Money Number');
+        }
+
+        if (VivaPackage::count() === 0) {
+            $packages = [
+                [
+                    'name' => 'Starter AI Viva Bundle',
+                    'type' => 'ai_mock',
+                    'credits' => 10,
+                    'price_bdt' => 100.00,
+                    'description' => '10 AI Mock Viva Sessions (10 BDT / session)',
+                    'is_active' => true,
+                ],
+                [
+                    'name' => 'Standard AI Viva Bundle',
+                    'type' => 'ai_mock',
+                    'credits' => 25,
+                    'price_bdt' => 200.00,
+                    'description' => '25 AI Mock Viva Sessions (8 BDT / session - Best Value)',
+                    'is_active' => true,
+                ],
+                [
+                    'name' => 'Pro Master AI Bundle',
+                    'type' => 'ai_mock',
+                    'credits' => 50,
+                    'price_bdt' => 350.00,
+                    'description' => '50 AI Mock Viva Sessions (7 BDT / session - Max Savings)',
+                    'is_active' => true,
+                ],
+                [
+                    'name' => 'Human Expert Live Board Viva',
+                    'type' => 'live_human',
+                    'credits' => 1,
+                    'price_bdt' => 500.00,
+                    'description' => '1-on-1 30-Min Live Board Interview + Google Meet link, Session Video Recording & Examiner Scorecard',
+                    'is_active' => true,
+                ],
+            ];
+
+            foreach ($packages as $pkg) {
+                VivaPackage::create($pkg);
+            }
+        }
 
         // 3. Seed Viva Category configurations
         $categories = [

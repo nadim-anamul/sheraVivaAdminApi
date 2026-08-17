@@ -412,11 +412,18 @@
             </div>
             <button 
                 wire:click="importAll" 
+                wire:loading.attr="disabled"
+                wire:target="importAll"
                 class="import-btn"
                 style="background: #047857;"
                 @if(count($importedIndices) === count($discoveredJobs)) disabled @endif
             >
-                <i class="fa-solid fa-cloud-arrow-down"></i> Import All Discovered Circulars
+                <span wire:loading.remove wire:target="importAll">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> Import All Discovered Circulars
+                </span>
+                <span wire:loading wire:target="importAll" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Saving Circulars to Database...
+                </span>
             </button>
         </div>
     @endif
@@ -574,14 +581,21 @@
 
                         <button 
                             wire:click="importJob({{ $index }})" 
+                            wire:loading.attr="disabled"
+                            wire:target="importJob({{ $index }})"
                             class="import-btn"
                             @if($isImported) disabled @endif
                         >
-                            @if($isImported)
-                                <i class="fa-solid fa-check"></i> Saved
-                            @else
-                                <i class="fa-solid fa-floppy-disk"></i> Save & Import
-                            @endif
+                            <span wire:loading.remove wire:target="importJob({{ $index }})">
+                                @if($isImported)
+                                    <i class="fa-solid fa-check"></i> Saved
+                                @else
+                                    <i class="fa-solid fa-floppy-disk"></i> Save & Import
+                                @endif
+                            </span>
+                            <span wire:loading wire:target="importJob({{ $index }})" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+                            </span>
                         </button>
                     </div>
                 </div>

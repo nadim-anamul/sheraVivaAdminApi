@@ -117,6 +117,6 @@ class CandidateAuthController extends Controller
             return redirect('/examiner');
         }
 
-        return redirect()->route('dashboard');
+        return redirect()->route('filament.candidate.pages.candidate-dashboard');
     }
 }

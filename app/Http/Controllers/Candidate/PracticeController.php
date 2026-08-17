@@ -88,4 +88,11 @@ class PracticeController extends Controller
 
         return view('viva.session-review', compact('sessionLog'));
     }
+
+    public function showLibraryItemDetailPage($id)
+    {
+        $item = QuestionBank::findOrFail($id);
+
+        return view('candidate.library-detail', compact('item'));
+    }
 }

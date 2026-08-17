@@ -15,13 +15,18 @@
             <p class="text-text-muted text-base lg:text-lg mb-9 max-w-[540px]">
                 Prepare for BCS, Bangladesh Bank AD, and Primary Teacher oral exams. Practice with our real-time voice simulator or schedule live mock interviews with board experts.
             </p>
-            <div class="flex items-center gap-4 mb-12 flex-wrap">
-                <a href="/login" class="btn-primary py-3 px-6 text-sm lg:text-base">
-                    <i class="fa-solid fa-play"></i> Start AI Practice
+            <div class="flex items-center gap-4 mb-6 flex-wrap">
+                <a href="{{ route('auth.google') }}" class="btn-primary py-3 px-6 text-sm lg:text-base flex items-center gap-2">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 18px; height: 18px; background: #ffffff; border-radius: 50%; padding: 1px;" alt="Google">
+                    <span>Continue with Google (1 Free Credit)</span>
                 </a>
-                <a href="#experts" class="btn-secondary py-3 px-6 text-sm lg:text-base">
-                    <i class="fa-solid fa-user-tie"></i> Book Board Panelist
+                <a href="/login" class="btn-secondary py-3 px-6 text-sm lg:text-base">
+                    <i class="fa-solid fa-tags"></i> Packages (10 Vivas @ ৳100)
                 </a>
+            </div>
+
+            <div class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs px-3.5 py-1.5 rounded-full font-bold mb-8">
+                <i class="fa-solid fa-shield-check"></i> Instant bKash Send Money & Google Meet Live Board Integration
             </div>
             
             <div class="flex items-center gap-10 border-t border-white/5 pt-7">

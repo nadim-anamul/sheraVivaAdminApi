@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JobUpdateApiController;
 use App\Http\Controllers\VivaApiController;
+use App\Models\VivaPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,9 +20,16 @@ Route::middleware('api.key')->group(function () {
     // Public Authentication endpoints
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/google', [AuthApiController::class, 'handleMobileGoogleLogin']);
 
-    // Public categories, library, rules, and job updates endpoints
+    // Public categories, library, packages, rules, and job updates endpoints
     Route::get('/viva/categories', [VivaApiController::class, 'getCategories']);
+    Route::get('/viva/packages', function () {
+        return response()->json([
+            'status' => 'success',
+            'packages' => VivaPackage::where('is_active', true)->get(),
+        ]);
+    });
     Route::get('/viva/library', [VivaApiController::class, 'getQuestionLibrary']);
     Route::get('/viva/library/{id}', [VivaApiController::class, 'getQuestionBankItem']);
     Route::get('/viva/advice', [VivaApiController::class, 'getAdvice']);
@@ -39,6 +48,7 @@ Route::middleware('api.key')->group(function () {
         Route::get('/user', function (Request $request) {
             return $request->user();
         });
+        Route::get('/user/credits', [AuthApiController::class, 'getProfile']);
 
         Route::post('/auth/logout', [AuthController::class, 'logout']);
 
