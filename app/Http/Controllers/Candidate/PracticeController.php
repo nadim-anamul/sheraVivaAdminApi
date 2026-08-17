@@ -8,6 +8,7 @@ use App\Models\QuestionBank;
 use App\Models\VivaAdvice;
 use App\Models\VivaCategory;
 use App\Models\VivaRule;
+use App\Models\VivaSessionLog;
 use Illuminate\Http\Request;
 
 class PracticeController extends Controller
@@ -79,5 +80,12 @@ class PracticeController extends Controller
         $rules = $rulesQuery->get();
 
         return view('candidate.guidelines', compact('advices', 'rules', 'examType'));
+    }
+
+    public function showSessionReviewPage($id)
+    {
+        $sessionLog = VivaSessionLog::findOrFail($id);
+
+        return view('viva.session-review', compact('sessionLog'));
     }
 }

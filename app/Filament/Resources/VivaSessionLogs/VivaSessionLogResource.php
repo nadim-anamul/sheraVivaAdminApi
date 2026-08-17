@@ -31,6 +31,7 @@ class VivaSessionLogResource extends Resource
     {
         return [
             'index' => ListVivaSessionLogs::route('/'),
+            'view' => Pages\ViewVivaSessionLog::route('/{record}'),
         ];
     }
 }

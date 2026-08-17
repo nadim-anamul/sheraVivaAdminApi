@@ -158,7 +158,8 @@ PROMPT;
         string $examType = 'BCS',
         string $position = '',
         string $candidateCv = '',
-        int $currentQuestionCount = 1
+        int $currentQuestionCount = 1,
+        array $cadreChoices = []
     ): array {
         $historyText = '';
         foreach ($history as $step) {
@@ -167,7 +168,16 @@ PROMPT;
             $historyText .= "{$speaker}: {$text}\n";
         }
 
-        // 1. First attempt to load pre-synthesized compact ExamKnowledgeBank card for this exam_type & position
+        // Format cadre choice context string
+        $choicesContext = '';
+        if (!empty($cadreChoices)) {
+            $choicesContext = "CANDIDATE CADRE PREFERENCES:\n";
+            foreach ($cadreChoices as $rank => $cadreName) {
+                $choicesContext .= "  - {$rank}: {$cadreName}\n";
+            }
+        }
+
+        // 1. Load pre-synthesized ExamKnowledgeBank card
         $knowledgeCard = ExamKnowledgeBank::where('exam_type', $examType)
             ->where(function ($query) use ($position) {
                 if (!empty($position)) {
@@ -179,16 +189,15 @@ PROMPT;
             ->first();
 
         if (!$knowledgeCard) {
-            // Fallback to General card for that exam_type
             $knowledgeCard = ExamKnowledgeBank::where('exam_type', $examType)->latest('last_synthesized_at')->first();
         }
 
         $realExamplesContext = '';
         if ($knowledgeCard) {
-            $realExamplesContext = "PRE-COMPILED AUTHENTIC BOARD KNOWLEDGE MATRIX ({$knowledgeCard->title}, indexed from {$knowledgeCard->source_items_count} real board records):\n";
+            $realExamplesContext = "PRE-COMPILED AUTHENTIC BOARD KNOWLEDGE MATRIX ({$knowledgeCard->title}):\n";
             $realExamplesContext .= 'Board Interrogation Tone & Traps: '.$knowledgeCard->chairman_style."\n";
             $realExamplesContext .= 'Core High-Frequency Topics: '.implode(', ', $knowledgeCard->core_topics ?? [])."\n\n";
-            $realExamplesContext .= "High-Frequency Questions Pool:\n";
+            $realExamplesContext .= "High-Frequency Board Questions:\n";
             if (is_array($knowledgeCard->top_questions)) {
                 foreach (array_slice($knowledgeCard->top_questions, 0, 6) as $idx => $tq) {
                     $qStr = $tq['question'] ?? '';
@@ -196,57 +205,33 @@ PROMPT;
                     $realExamplesContext .= '  '.($idx + 1).". [{$top}] {$qStr}\n";
                 }
             }
-        } else {
-            // Fallback to querying 3 raw transcripts if no synthesized matrix exists yet
-            $relevantExperiences = QuestionBank::where('exam_type', $examType)
-                ->where(function ($query) use ($position, $candidateCv) {
-                    if (!empty($position)) {
-                        $query->orWhere('title', 'like', "%{$position}%")
-                            ->orWhere('subject', 'like', "%{$position}%");
-                    }
-                    if (!empty($candidateCv)) {
-                        $query->orWhere('subject', 'like', "%{$candidateCv}%");
-                    }
-                })
-                ->limit(3)
-                ->get();
-
-            if ($relevantExperiences->isNotEmpty()) {
-                $realExamplesContext = "Here is context from REAL past board viva transcripts matching this exam/position:\n";
-                foreach ($relevantExperiences as $index => $exp) {
-                    $realExamplesContext .= 'Example '.($index + 1).' ('.$exp->title."):\n";
-                    if (is_array($exp->transcript)) {
-                        foreach (array_slice($exp->transcript, 0, 4) as $exStep) {
-                            $speaker = $exStep['speaker'] ?? 'Interviewer';
-                            $text = $exStep['text'] ?? '';
-                            $realExamplesContext .= "  - {$speaker}: {$text}\n";
-                        }
-                    }
-                    $realExamplesContext .= "\n";
-                }
-            }
         }
 
         $conclusionGuidance = '';
-        if ($currentQuestionCount >= 5) {
+        if ($currentQuestionCount >= 8) {
             $conclusionGuidance = <<<GUIDANCE
-CRITICAL ADAPTIVE VIVA DECISION INSTRUCTION:
-The candidate has completed {$currentQuestionCount} questions (Minimum required: 5, Hard Cap Maximum: 15).
-Evaluate the candidate's performance across the transcript history:
-1. If the candidate has demonstrated clear, decisive mastery OR clear, irrecoverable failure, conclude the viva session now. Set "is_concluded": true and provide a polite closing statement as the question string (e.g. "Thank you candidate. The board has concluded your viva session.").
-2. If the candidate's performance is borderline or requires further probing into specific weak areas, set "is_concluded": false and generate the next probing question.
+CRITICAL ADAPTIVE BOARD INTERROGATION INSTRUCTION (Question #{$currentQuestionCount} of 20 - Minimum 8 required):
+1. You have passed the mandatory 8-question baseline assessment.
+2. Evaluate if the candidate has demonstrated clear, unambiguous suitability for their 1ST CADRE CHOICE vs 2ND CADRE CHOICE vs Non-Cadre placement.
+3. If clear consensus is reached OR if the candidate shows irrecoverable failure, conclude the session now. Set "is_concluded": true and provide a polite closing statement as the question string (e.g. "Thank you candidate. The board has concluded your viva session.").
+4. If the candidate is strong and you need to probe deeper into their 1st or 2nd cadre choice capabilities under pressure (simulating a 15-20 minute rigorous BPSC board), set "is_concluded": false and ask the next probing question.
 GUIDANCE;
         } else {
-            $conclusionGuidance = "This is Question #{$currentQuestionCount} (Minimum 5 questions required before conclusion). Set 'is_concluded': false and generate the next board question.";
+            $conclusionGuidance = "This is Question #{$currentQuestionCount} of 20 (Minimum 8 questions required before conclusion). Set 'is_concluded': false and generate the next board question.";
         }
 
         $prompt = <<<PROMPT
-You are a highly distinguished Bangladeshi Viva Board Chairman for '{$categoryTitle}'.
+You are the Honorable Chairman of a Bangladeshi BPSC / Bank Viva Board for '{$categoryTitle}'.
 Target Position: {$position}
 Exam Type: {$examType}
 Candidate Profile/CV: {$candidateCv}
+{$choicesContext}
 
-Your goal is to conduct a highly realistic, professional, and adaptive job interview (in Bangla/English mixed naturally as done in real BPSC/Bank/Primary boards).
+Your goal is to conduct an authentic 10-20 minute BPSC / Bank board viva session (asking 8 to 20 questions adaptively). 
+- Questions 1-3: Candidate background, district history & academic major.
+- Questions 4-7: Laws, Constitution of Bangladesh, Liberations War 1971, National & International Current Affairs.
+- Questions 8-14: Situational & legal crisis interrogation testing fit for 1ST CADRE CHOICE.
+- Questions 15-20: Advanced pressure testing & 2ND CADRE CHOICE matching for top candidates.
 
 {$realExamplesContext}
 
@@ -255,15 +240,13 @@ Previous Conversation History:
 
 {$conclusionGuidance}
 
-Based on the candidate's CV/bio, target position, real past board examples, and the ongoing conversation history, generate the NEXT viva board step. Focus on testing technical/academic knowledge, legal/constitutional awareness, and situational stress handling.
-
-Return a structured JSON object:
+Generate the NEXT viva step and return a JSON object:
 {
   "question_no": {$currentQuestionCount},
   "speaker": "Chairman" or "Board Member 1" or "Board Member 2",
   "question": "The question string or board closing statement",
   "is_concluded": false,
-  "context_hint": "Brief background hint on why this question is being asked",
+  "context_hint": "Why this question is asked for Cadre matching",
   "expected_key_points": ["Key concept 1", "Key concept 2"]
 }
 PROMPT;
@@ -468,7 +451,7 @@ PROMPT;
      * Evaluate a complete viva interview transcript to generate overall board marks out of 100,
      * category score breakdown, executive board feedback, and candidate recommendation verdict.
      */
-    public function evaluateFullSessionTranscript(array $transcriptHistory, string $examType, string $position = '', string $candidateCv = ''): array
+    public function evaluateFullSessionTranscript(array $transcriptHistory, string $examType, string $position = '', string $candidateCv = '', array $cadreChoices = []): array
     {
         $transcriptText = '';
         foreach ($transcriptHistory as $step) {
@@ -477,27 +460,50 @@ PROMPT;
             $transcriptText .= "{$spk}: {$txt}\n";
         }
 
+        $choicesStr = '';
+        if (!empty($cadreChoices)) {
+            $choicesStr = "Candidate Submitted Cadre Preference List (Ranked 1 to N):\n";
+            foreach ($cadreChoices as $rk => $cName) {
+                if (!empty(trim($cName))) {
+                    $choicesStr .= "  - {$rk}: {$cName}\n";
+                }
+            }
+        }
+
         $prompt = <<<PROMPT
-You are the Honorable Chairman of a Bangladeshi BPSC & Bank Viva Board evaluating a candidate who just completed their viva.
+You are the Honorable Chairman of a Bangladeshi BPSC & Bank Viva Board evaluating a candidate who just completed an 8-20 question board interview.
 Exam Category: {$examType}
-Position: {$position}
+Primary Target Position: {$position}
 Candidate Profile: {$candidateCv}
+{$choicesStr}
 
 Complete Board Interview Transcript:
 {$transcriptText}
 
-Evaluate the candidate's overall performance across the entire viva session and return a structured JSON evaluation report:
+Evaluate the candidate's performance across the entire session. Compare their domain depth, legal knowledge, and leadership style against all their submitted cadre preferences (Choices 1 to 7+).
+
+Return a structured JSON evaluation report:
 {
-  "overall_score": 82,
-  "verdict": "Recommended for {$examType} {$position}",
+  "overall_score": 84,
+  "verdict": "RECOMMENDED FOR 1ST CHOICE: {$position}",
+  "cadre_choice_fit": "1st Choice ({$position})",
   "score_breakdown": {
     "academic_subject_knowledge": 25,
     "legal_policy_constitution": 26,
     "cadre_personality_aptitude": 22,
-    "communication_stress_handling": 9
+    "communication_stress_handling": 11
   },
-  "board_feedback": "2-3 sentences summarizing the candidate's core strengths, legal knowledge, and board presence during the viva.",
-  "recommendations": "1-2 actionable tips for candidate improvement."
+  "cadre_suitability_ratings": [
+    {"choice": "1st Choice", "cadre": "BCS Administration Cadre", "fit_percent": 92},
+    {"choice": "2nd Choice", "cadre": "BCS Foreign Affairs Cadre", "fit_percent": 86},
+    {"choice": "3rd Choice", "cadre": "BCS Police Cadre", "fit_percent": 80},
+    {"choice": "4th Choice", "cadre": "BCS Audit & Accounts", "fit_percent": 75},
+    {"choice": "5th Choice", "cadre": "BCS Tax", "fit_percent": 70},
+    {"choice": "6th Choice", "cadre": "BCS Customs & Excise", "fit_percent": 68},
+    {"choice": "7th Choice", "cadre": "BCS Ansar", "fit_percent": 65}
+  ],
+  "board_feedback": "3-4 detailed sentences analyzing why the candidate is best suited for Choice 1 vs other choices based on their answers during the board interrogation.",
+  "recommendations": "2 key actionable strategic tips for candidate improvement."
 }
 PROMPT;
 
@@ -505,16 +511,21 @@ PROMPT;
 
         if (empty($result) || !is_array($result)) {
             return [
-                'overall_score' => 75,
-                'verdict' => 'Recommended',
+                'overall_score' => 78,
+                'verdict' => "RECOMMENDED FOR 1ST CHOICE: {$position}",
+                'cadre_choice_fit' => "1st Choice ({$position})",
                 'score_breakdown' => [
-                    'academic_subject_knowledge' => 22,
-                    'legal_policy_constitution' => 22,
+                    'academic_subject_knowledge' => 23,
+                    'legal_policy_constitution' => 24,
                     'cadre_personality_aptitude' => 20,
                     'communication_stress_handling' => 11,
                 ],
-                'board_feedback' => 'The candidate showed satisfactory communication and domain awareness throughout the viva board session.',
-                'recommendations' => 'Review recent constitutional amendments and contemporary economic affairs.',
+                'cadre_suitability_ratings' => [
+                    'choice_1_fit' => 88,
+                    'choice_2_fit' => 80,
+                ],
+                'board_feedback' => 'The candidate demonstrated strong constitutional awareness and magistrate decision-making capabilities matching their 1st choice preference.',
+                'recommendations' => 'Deepen knowledge of recent economic monetary policy and administrative law procedures.',
             ];
         }
 

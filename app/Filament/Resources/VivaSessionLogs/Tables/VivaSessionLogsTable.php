@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\VivaSessionLogs\Tables;
 
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -44,6 +45,9 @@ class VivaSessionLogsTable
                     ->dateTime()
                     ->sortable()
                     ->label('Completed At'),
+            ])
+            ->actions([
+                ViewAction::make(),
             ])
             ->defaultSort('completed_at', 'desc');
     }

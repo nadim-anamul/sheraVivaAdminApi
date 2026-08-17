@@ -43,6 +43,7 @@ Route::get('examiner/login', [CandidateAuthController::class, 'showAdminLogin'])
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/viva/practice', [PracticeController::class, 'showPracticePage'])->name('viva.practice');
+    Route::get('/viva/sessions/{id}', [PracticeController::class, 'showSessionReviewPage'])->name('viva.session.review');
     Route::get('/library', [PracticeController::class, 'showLibraryPage'])->name('candidate.library');
     Route::get('/job-updates', [PracticeController::class, 'showJobUpdatesPage'])->name('candidate.job_updates');
     Route::get('/guidelines', [PracticeController::class, 'showGuidelinesPage'])->name('candidate.guidelines');
