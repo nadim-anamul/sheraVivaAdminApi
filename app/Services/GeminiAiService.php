@@ -255,30 +255,24 @@ PROMPT;
     }
 
     /**
-     * Synthesize all QuestionBank records grouped by exam_type & subject into compact ExamKnowledgeBank cards using AI.
+     * Breakdown all QuestionBank records into lightweight micro-batches (max 15 records per HTTP step).
      */
-    public function synthesizeExamKnowledge(?string $targetExamType = null): array
+    public function getSynthesisBatches(?string $targetExamType = null): array
     {
         $query = QuestionBank::query();
-        if (!empty($targetExamType)) {
+        if (!empty($targetExamType) && $targetExamType !== 'All') {
             $query->where('exam_type', $targetExamType);
         }
 
-        $allBankRecords = $query->get();
-        if ($allBankRecords->isEmpty()) {
-            return [
-                'status' => 'warning',
-                'message' => 'No QuestionBank records found to synthesize.',
-                'count' => 0,
-            ];
+        $allRecords = $query->get();
+        if ($allRecords->isEmpty()) {
+            return [];
         }
 
-        // Group records by exam_type
-        $grouped = $allBankRecords->groupBy('exam_type');
-        $synthesizedCount = 0;
+        $batches = [];
+        $grouped = $allRecords->groupBy('exam_type');
 
         foreach ($grouped as $examType => $records) {
-            // Further group by major categories/subjects if enough records
             $subjectGroups = $records->groupBy(function ($item) {
                 $sub = trim($item->subject ?? '');
                 if (empty($sub) || strtolower($sub) === 'n/a' || strtolower($sub) === 'general') {
@@ -289,35 +283,61 @@ PROMPT;
             });
 
             foreach ($subjectGroups as $subjectCat => $catRecords) {
-                // If a category group has large datasets (300+ records), chunk them into batches of max 25 records
-                $chunkSize = 25;
-                $chunks = $catRecords->chunk($chunkSize);
-
-                $combinedTopQuestions = [];
-                $combinedCoreTopics = [];
-                $chairmanStyle = '';
-                $matrixTitle = "{$examType} {$subjectCat} Board Question Matrix";
-
+                // Split records into micro-chunks of max 15 records
+                $chunks = $catRecords->chunk(15);
                 foreach ($chunks as $chunkIndex => $chunkRecords) {
-                    // Prepare text summary for this chunk (max 25 records)
-                    $sampleText = "Exam Type: {$examType}\nCategory/Subject: {$subjectCat} (Batch ".($chunkIndex + 1).' of '.$chunks->count().")\nRecords in Batch: ".$chunkRecords->count()."\n\n";
+                    $label = $chunks->count() > 1
+                        ? "{$examType} - {$subjectCat} (Part ".($chunkIndex + 1).'/'.$chunks->count().')'
+                        : "{$examType} - {$subjectCat}";
 
-                    foreach ($chunkRecords as $index => $rec) {
-                        $sampleText .= '--- Record #'.($index + 1).": {$rec->title} (Board: {$rec->board}, Result: {$rec->result}) ---\n";
-                        if (!empty($rec->remarks)) {
-                            $sampleText .= "Remarks: {$rec->remarks}\n";
-                        }
-                        if (is_array($rec->transcript)) {
-                            foreach (array_slice($rec->transcript, 0, 6) as $t) {
-                                $spk = $t['speaker'] ?? 'Interviewer';
-                                $txt = $t['text'] ?? '';
-                                $sampleText .= "  {$spk}: {$txt}\n";
-                            }
-                        }
-                        $sampleText .= "\n";
-                    }
+                    $batches[] = [
+                        'exam_type' => $examType,
+                        'subject_category' => $subjectCat,
+                        'chunk_index' => $chunkIndex,
+                        'total_chunks' => $chunks->count(),
+                        'record_ids' => $chunkRecords->pluck('id')->toArray(),
+                        'label' => $label,
+                    ];
+                }
+            }
+        }
 
-                    $prompt = <<<PROMPT
+        return $batches;
+    }
+
+    /**
+     * Synthesize ONE single micro-batch (max 15 records) safely in ~2.5 seconds.
+     */
+    public function synthesizeMicroBatch(array $batchInfo): array
+    {
+        $examType = $batchInfo['exam_type'] ?? 'BCS';
+        $subjectCat = $batchInfo['subject_category'] ?? 'General';
+        $recordIds = $batchInfo['record_ids'] ?? [];
+
+        if (empty($recordIds)) {
+            return ['status' => 'warning', 'message' => 'No records in micro-batch.'];
+        }
+
+        $records = QuestionBank::whereIn('id', $recordIds)->get();
+
+        $sampleText = "Exam Type: {$examType}\nCategory/Subject: {$subjectCat}\nTotal Records in Micro-Batch: ".$records->count()."\n\n";
+
+        foreach ($records as $index => $rec) {
+            $sampleText .= '--- Record #'.($index + 1).": {$rec->title} (Board: {$rec->board}, Result: {$rec->result}) ---\n";
+            if (!empty($rec->remarks)) {
+                $sampleText .= "Remarks: {$rec->remarks}\n";
+            }
+            if (is_array($rec->transcript)) {
+                foreach (array_slice($rec->transcript, 0, 6) as $t) {
+                    $spk = $t['speaker'] ?? 'Interviewer';
+                    $txt = $t['text'] ?? '';
+                    $sampleText .= "  {$spk}: {$txt}\n";
+                }
+            }
+            $sampleText .= "\n";
+        }
+
+        $prompt = <<<PROMPT
 You are a senior Bangladeshi BPSC & Bank Viva Board analyst.
 Analyze the real candidate viva experiences below for Exam: '{$examType}' and Category/Subject: '{$subjectCat}'.
 
@@ -344,62 +364,75 @@ Return a structured JSON object:
 }
 PROMPT;
 
-                    $response = $this->callGeminiJson($prompt, $this->conversationModel);
+        $response = $this->callGeminiJson($prompt, $this->conversationModel);
 
-                    if (!empty($response) && is_array($response)) {
-                        if (!empty($response['title'])) {
-                            $matrixTitle = $response['title'];
-                        }
-                        if (!empty($response['chairman_style'])) {
-                            $chairmanStyle = $response['chairman_style'];
-                        }
-                        if (is_array($response['top_questions'] ?? null)) {
-                            $combinedTopQuestions = array_merge($combinedTopQuestions, $response['top_questions']);
-                        }
-                        if (is_array($response['core_topics'] ?? null)) {
-                            $combinedCoreTopics = array_merge($combinedCoreTopics, $response['core_topics']);
-                        }
-                    }
+        if (!empty($response) && is_array($response)) {
+            $existing = ExamKnowledgeBank::where('exam_type', $examType)
+                ->where('subject_category', $subjectCat)
+                ->first();
+
+            $existingTopQuestions = $existing ? ($existing->top_questions ?? []) : [];
+            $existingCoreTopics = $existing ? ($existing->core_topics ?? []) : [];
+
+            $newTopQuestions = array_merge($existingTopQuestions, $response['top_questions'] ?? []);
+            $newCoreTopics = array_values(array_unique(array_merge($existingCoreTopics, $response['core_topics'] ?? [])));
+
+            // Deduplicate top questions
+            $uniqueQuestions = [];
+            $seenQText = [];
+            foreach ($newTopQuestions as $tq) {
+                $qStr = trim($tq['question'] ?? '');
+                if (!empty($qStr) && !in_array($qStr, $seenQText)) {
+                    $seenQText[] = $qStr;
+                    $uniqueQuestions[] = $tq;
                 }
-
-                // Deduplicate and trim combined results
-                $combinedCoreTopics = array_values(array_unique($combinedCoreTopics));
-
-                $uniqueQuestions = [];
-                $seenQText = [];
-                foreach ($combinedTopQuestions as $tq) {
-                    $qStr = trim($tq['question'] ?? '');
-                    if (!empty($qStr) && !in_array($qStr, $seenQText)) {
-                        $seenQText[] = $qStr;
-                        $uniqueQuestions[] = $tq;
-                    }
-                    if (count($uniqueQuestions) >= 15) {
-                        break;
-                    }
+                if (count($uniqueQuestions) >= 15) {
+                    break;
                 }
+            }
 
-                ExamKnowledgeBank::updateOrCreate(
-                    [
-                        'exam_type' => $examType,
-                        'subject_category' => $subjectCat,
-                    ],
-                    [
-                        'title' => $matrixTitle,
-                        'top_questions' => $uniqueQuestions,
-                        'core_topics' => array_slice($combinedCoreTopics, 0, 10),
-                        'chairman_style' => $chairmanStyle ?: 'Demands crisp legal, policy, and situational precision.',
-                        'source_items_count' => $catRecords->count(),
-                        'last_synthesized_at' => now(),
-                    ]
-                );
-                $synthesizedCount++;
+            ExamKnowledgeBank::updateOrCreate(
+                [
+                    'exam_type' => $examType,
+                    'subject_category' => $subjectCat,
+                ],
+                [
+                    'title' => $response['title'] ?? "{$examType} {$subjectCat} Board Matrix",
+                    'top_questions' => $uniqueQuestions,
+                    'core_topics' => array_slice($newCoreTopics, 0, 10),
+                    'chairman_style' => $response['chairman_style'] ?? ($existing ? $existing->chairman_style : 'Demands crisp legal and policy precision.'),
+                    'source_items_count' => ($existing ? $existing->source_items_count : 0) + $records->count(),
+                    'last_synthesized_at' => now(),
+                ]
+            );
+
+            return [
+                'status' => 'success',
+                'message' => "Synthesized batch {$batchInfo['label']} successfully!",
+            ];
+        }
+
+        return ['status' => 'error', 'message' => 'Failed to parse AI response for micro-batch.'];
+    }
+
+    /**
+     * Synthesize all QuestionBank records grouped by exam_type & subject into compact ExamKnowledgeBank cards using AI.
+     */
+    public function synthesizeExamKnowledge(?string $targetExamType = null): array
+    {
+        $batches = $this->getSynthesisBatches($targetExamType);
+        $count = 0;
+        foreach ($batches as $b) {
+            $res = $this->synthesizeMicroBatch($b);
+            if (($res['status'] ?? '') === 'success') {
+                $count++;
             }
         }
 
         return [
             'status' => 'success',
-            'message' => "Successfully synthesized {$synthesizedCount} viva knowledge cards from ".$allBankRecords->count().' QuestionBank records!',
-            'count' => $synthesizedCount,
+            'message' => "Successfully synthesized {$count} micro-batches!",
+            'count' => $count,
         ];
     }
 

@@ -29,46 +29,52 @@ class VivaKnowledgeSynthesizerPage extends Page
 
     public int $totalStepCount = 0;
 
-    public array $pendingCategories = [];
+    public array $pendingBatches = [];
 
     /**
-     * Start the stepped category synthesis queue.
+     * Start the micro-batch queue synthesis.
      */
-    public function startBatchSynthesis(array $categories = []): void
+    public function startBatchSynthesis(GeminiAiService $gemini, ?string $examType = null): void
     {
-        if (empty($categories)) {
-            $categories = QuestionBank::distinct()->pluck('exam_type')->toArray();
-            if (empty($categories)) {
-                $categories = ['BCS', 'Bank', 'Primary', 'Other'];
-            }
+        $this->isSynthesizing = true;
+        $this->pendingBatches = $gemini->getSynthesisBatches($examType);
+        $this->totalStepCount = count($this->pendingBatches);
+        $this->currentStepIndex = 0;
+
+        if ($this->totalStepCount === 0) {
+            $this->isSynthesizing = false;
+            $this->statusMessage = 'No Question Bank records found to synthesize.';
+
+            return;
         }
 
-        $this->isSynthesizing = true;
-        $this->pendingCategories = array_values(array_unique($categories));
-        $this->totalStepCount = count($this->pendingCategories);
-        $this->currentStepIndex = 0;
-        $this->statusMessage = "Starting step-by-step synthesis for {$this->totalStepCount} category groups...";
+        $this->statusMessage = "Starting synthesis across {$this->totalStepCount} micro-batches...";
     }
 
     /**
-     * Process ONE single exam category step safely within 3-5 seconds.
+     * Process ONE single micro-batch step safely within ~2.5 seconds.
      */
-    public function processCategoryStep(GeminiAiService $gemini, string $examType): void
+    public function processMicroBatchStep(GeminiAiService $gemini, int $batchIndex): void
     {
-        try {
-            $result = $gemini->synthesizeExamKnowledge($examType);
+        if (!isset($this->pendingBatches[$batchIndex])) {
+            return;
+        }
 
+        $batch = $this->pendingBatches[$batchIndex];
+
+        try {
+            $gemini->synthesizeMicroBatch($batch);
             $this->currentStepIndex++;
 
             if ($this->currentStepIndex >= $this->totalStepCount) {
                 $this->isSynthesizing = false;
-                $this->statusMessage = "COMPLETED! Synthesized all {$this->totalStepCount} exam knowledge matrices successfully!";
+                $this->statusMessage = "COMPLETED! Synthesized all {$this->totalStepCount} micro-batches successfully!";
             } else {
-                $this->statusMessage = "Synthesized {$examType} matrix ({$this->currentStepIndex}/{$this->totalStepCount}). Processing next category...";
+                $this->statusMessage = "Synthesized {$batch['label']} ({$this->currentStepIndex}/{$this->totalStepCount}). Processing next batch...";
             }
         } catch (\Exception $e) {
             $this->currentStepIndex++;
-            $this->statusMessage = "Error synthesizing {$examType}: ".$e->getMessage();
+            $this->statusMessage = "Error synthesizing {$batch['label']}: ".$e->getMessage();
             if ($this->currentStepIndex >= $this->totalStepCount) {
                 $this->isSynthesizing = false;
             }

@@ -106,23 +106,28 @@
             totalCategories: 0,
             progressPercent: 0,
 
-            async runBatchSynthesis(categories = []) {
+            async runBatchSynthesis(targetExam = null) {
                 if (this.isBatchRunning) return;
                 this.isBatchRunning = true;
                 this.currentIndex = 0;
                 this.progressPercent = 0;
 
-                await $wire.startBatchSynthesis(categories);
+                await $wire.startBatchSynthesis(targetExam);
 
-                const queue = Array.from($wire.pendingCategories);
+                const queue = Array.from($wire.pendingBatches);
                 this.totalCategories = queue.length;
 
+                if (queue.length === 0) {
+                    this.isBatchRunning = false;
+                    return;
+                }
+
                 for (let i = 0; i < queue.length; i++) {
-                    this.currentCategory = queue[i];
+                    this.currentCategory = queue[i].label || ('Micro-Batch ' + (i + 1));
                     this.currentIndex = i + 1;
                     this.progressPercent = Math.round((this.currentIndex / queue.length) * 100);
 
-                    await $wire.processCategoryStep(queue[i]);
+                    await $wire.processMicroBatchStep(i);
                 }
 
                 this.isBatchRunning = false;
@@ -149,7 +154,7 @@
                 </div>
 
                 <button 
-                    @click="runBatchSynthesis([])" 
+                    @click="runBatchSynthesis(null)" 
                     :disabled="isBatchRunning"
                     type="button" 
                     class="btn-emerald"
@@ -174,7 +179,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700;">
                         <span style="display: flex; align-items: center; gap: 8px;">
                             <i class="fa-solid fa-spinner fa-spin text-emerald-400"></i>
-                            Synthesizing Category: <span x-text="currentCategory" style="color: #34D399;"></span>
+                            Synthesizing: <span x-text="currentCategory" style="color: #34D399;"></span>
                         </span>
                         <span x-text="progressPercent + '%'"></span>
                     </div>
@@ -235,9 +240,9 @@
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: #F9FAFB; padding: 16px; border-radius: 12px; border: 1px solid #E5E7EB;" class="dark:bg-gray-900/70 dark:border-gray-800">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #6B7280; letter-spacing: 0.03em;">Quick Synthesis Actions:</span>
-                <button @click="runBatchSynthesis(['BCS'])" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-gavel"></i> Synthesize BCS</button>
-                <button @click="runBatchSynthesis(['Bank'])" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-building-columns"></i> Synthesize Bank</button>
-                <button @click="runBatchSynthesis(['Primary'])" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-school"></i> Synthesize Primary</button>
+                <button @click="runBatchSynthesis('BCS')" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-gavel"></i> Synthesize BCS</button>
+                <button @click="runBatchSynthesis('Bank')" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-building-columns"></i> Synthesize Bank</button>
+                <button @click="runBatchSynthesis('Primary')" :disabled="isBatchRunning" class="btn-outline"><i class="fa-solid fa-school"></i> Synthesize Primary</button>
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px;">
