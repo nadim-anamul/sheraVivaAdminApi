@@ -289,25 +289,35 @@ PROMPT;
             });
 
             foreach ($subjectGroups as $subjectCat => $catRecords) {
-                // Prepare raw text summary of the questions and transcripts for Gemini
-                $sampleText = "Exam Type: {$examType}\nCategory/Subject: {$subjectCat}\nTotal Records: ".$catRecords->count()."\n\n";
+                // If a category group has large datasets (300+ records), chunk them into batches of max 25 records
+                $chunkSize = 25;
+                $chunks = $catRecords->chunk($chunkSize);
 
-                foreach ($catRecords as $index => $rec) {
-                    $sampleText .= '--- Record #'.($index + 1).": {$rec->title} (Board: {$rec->board}, Result: {$rec->result}) ---\n";
-                    if (!empty($rec->remarks)) {
-                        $sampleText .= "Remarks: {$rec->remarks}\n";
-                    }
-                    if (is_array($rec->transcript)) {
-                        foreach (array_slice($rec->transcript, 0, 8) as $t) {
-                            $spk = $t['speaker'] ?? 'Interviewer';
-                            $txt = $t['text'] ?? '';
-                            $sampleText .= "  {$spk}: {$txt}\n";
+                $combinedTopQuestions = [];
+                $combinedCoreTopics = [];
+                $chairmanStyle = '';
+                $matrixTitle = "{$examType} {$subjectCat} Board Question Matrix";
+
+                foreach ($chunks as $chunkIndex => $chunkRecords) {
+                    // Prepare text summary for this chunk (max 25 records)
+                    $sampleText = "Exam Type: {$examType}\nCategory/Subject: {$subjectCat} (Batch ".($chunkIndex + 1).' of '.$chunks->count().")\nRecords in Batch: ".$chunkRecords->count()."\n\n";
+
+                    foreach ($chunkRecords as $index => $rec) {
+                        $sampleText .= '--- Record #'.($index + 1).": {$rec->title} (Board: {$rec->board}, Result: {$rec->result}) ---\n";
+                        if (!empty($rec->remarks)) {
+                            $sampleText .= "Remarks: {$rec->remarks}\n";
                         }
+                        if (is_array($rec->transcript)) {
+                            foreach (array_slice($rec->transcript, 0, 6) as $t) {
+                                $spk = $t['speaker'] ?? 'Interviewer';
+                                $txt = $t['text'] ?? '';
+                                $sampleText .= "  {$spk}: {$txt}\n";
+                            }
+                        }
+                        $sampleText .= "\n";
                     }
-                    $sampleText .= "\n";
-                }
 
-                $prompt = <<<PROMPT
+                    $prompt = <<<PROMPT
 You are a senior Bangladeshi BPSC & Bank Viva Board analyst.
 Analyze the real candidate viva experiences below for Exam: '{$examType}' and Category/Subject: '{$subjectCat}'.
 
@@ -334,25 +344,55 @@ Return a structured JSON object:
 }
 PROMPT;
 
-                $response = $this->callGeminiJson($prompt, $this->conversationModel);
+                    $response = $this->callGeminiJson($prompt, $this->conversationModel);
 
-                if (!empty($response) && is_array($response)) {
-                    ExamKnowledgeBank::updateOrCreate(
-                        [
-                            'exam_type' => $examType,
-                            'subject_category' => $subjectCat,
-                        ],
-                        [
-                            'title' => $response['title'] ?? "{$examType} {$subjectCat} Board Matrix",
-                            'top_questions' => $response['top_questions'] ?? [],
-                            'core_topics' => $response['core_topics'] ?? [],
-                            'chairman_style' => $response['chairman_style'] ?? 'Demands crisp legal and policy precision.',
-                            'source_items_count' => $catRecords->count(),
-                            'last_synthesized_at' => now(),
-                        ]
-                    );
-                    $synthesizedCount++;
+                    if (!empty($response) && is_array($response)) {
+                        if (!empty($response['title'])) {
+                            $matrixTitle = $response['title'];
+                        }
+                        if (!empty($response['chairman_style'])) {
+                            $chairmanStyle = $response['chairman_style'];
+                        }
+                        if (is_array($response['top_questions'] ?? null)) {
+                            $combinedTopQuestions = array_merge($combinedTopQuestions, $response['top_questions']);
+                        }
+                        if (is_array($response['core_topics'] ?? null)) {
+                            $combinedCoreTopics = array_merge($combinedCoreTopics, $response['core_topics']);
+                        }
+                    }
                 }
+
+                // Deduplicate and trim combined results
+                $combinedCoreTopics = array_values(array_unique($combinedCoreTopics));
+
+                $uniqueQuestions = [];
+                $seenQText = [];
+                foreach ($combinedTopQuestions as $tq) {
+                    $qStr = trim($tq['question'] ?? '');
+                    if (!empty($qStr) && !in_array($qStr, $seenQText)) {
+                        $seenQText[] = $qStr;
+                        $uniqueQuestions[] = $tq;
+                    }
+                    if (count($uniqueQuestions) >= 15) {
+                        break;
+                    }
+                }
+
+                ExamKnowledgeBank::updateOrCreate(
+                    [
+                        'exam_type' => $examType,
+                        'subject_category' => $subjectCat,
+                    ],
+                    [
+                        'title' => $matrixTitle,
+                        'top_questions' => $uniqueQuestions,
+                        'core_topics' => array_slice($combinedCoreTopics, 0, 10),
+                        'chairman_style' => $chairmanStyle ?: 'Demands crisp legal, policy, and situational precision.',
+                        'source_items_count' => $catRecords->count(),
+                        'last_synthesized_at' => now(),
+                    ]
+                );
+                $synthesizedCount++;
             }
         }
 
