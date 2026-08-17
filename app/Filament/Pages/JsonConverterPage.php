@@ -81,6 +81,26 @@ class JsonConverterPage extends Page
             $mimeType = $this->singleFile->getMimeType() ?: 'application/pdf';
             $fileName = $this->singleFile->getClientOriginalName();
 
+            // Check if file already exists in Question Bank DB to save tokens & prevent duplicate records
+            $alreadyExists = QuestionBank::where('exam_type', $this->examType)
+                ->where('remarks', 'like', "%{$fileName}%")
+                ->exists();
+
+            if ($alreadyExists && $this->autoSaveToDb) {
+                $this->processedFileCount++;
+                $sessionLogs = session()->get('json_converter_logs', []);
+                $sessionLogs[] = "File {$currentIndex}/{$totalCount} [{$fileName}]: Already exists in {$this->examType} Question Bank DB, skipped.";
+                session()->put('json_converter_logs', $sessionLogs);
+                $this->processingLog = array_slice($sessionLogs, -5);
+                $this->singleFile = null;
+
+                if ($this->processedFileCount >= $totalCount) {
+                    $this->finalizeBatchProcess();
+                }
+
+                return;
+            }
+
             // Track logs in session to prevent payload bloat
             $sessionLogs = session()->get('json_converter_logs', []);
             $sessionLogs[] = "File {$currentIndex}/{$totalCount} [{$fileName}]: Extracting with Gemini 3.5 Flash...";
@@ -124,7 +144,7 @@ class JsonConverterPage extends Page
 
             $itemsInFile = count($parsedItems);
 
-            // Save items in session instead of public property
+            // Save items in session buffer instead of public Livewire property
             $sessionItems = session()->get('json_converter_accumulated', []);
             $sessionItems = array_merge($sessionItems, $parsedItems);
             session()->put('json_converter_accumulated', $sessionItems);
@@ -146,7 +166,7 @@ class JsonConverterPage extends Page
                         'duration' => $item['duration'] ?? null,
                         'result' => $item['result'] ?? null,
                         'experience_rating' => $item['experienceRating'] ?? 'Good',
-                        'remarks' => $item['remarks'] ?? null,
+                        'remarks' => $item['remarks'] ?? ('Extracted from batch file: '.$fileName),
                         'transcript' => $item['transcript'] ?? [],
                     ]);
                 }
@@ -159,20 +179,7 @@ class JsonConverterPage extends Page
             session()->put('json_converter_logs', $sessionLogs);
 
             if ($this->processedFileCount >= $totalCount) {
-                $this->isProcessing = false;
-
-                // Load all items and complete logs ONLY on final batch completion request
-                $allAccumulated = session()->get('json_converter_accumulated', []);
-                $this->accumulatedItems = $allAccumulated;
-                $this->itemsCount = count($allAccumulated);
-                $this->convertedJson = json_encode($allAccumulated, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
-                $this->processingLog = session()->get('json_converter_logs', []);
-                $this->statusMessage = "BATCH COMPLETE! Processed {$this->processedFileCount} files, generated {$this->itemsCount} viva Q&A items, and stored all records into {$this->examType} Question Bank Database!";
-
-                // Flush session buffers
-                session()->forget('json_converter_accumulated');
-                session()->forget('json_converter_logs');
+                $this->finalizeBatchProcess();
             } else {
                 $this->processingLog = array_slice($sessionLogs, -5);
                 $this->statusMessage = "Processed {$this->processedFileCount} of {$totalCount} files...";
@@ -187,6 +194,56 @@ class JsonConverterPage extends Page
             $this->processingLog = array_slice($sessionLogs, -5);
             $this->singleFile = null;
         }
+    }
+
+    /**
+     * Finalize batch queue execution, create compact preview, and buffer download session.
+     */
+    protected function finalizeBatchProcess(): void
+    {
+        $this->isProcessing = false;
+
+        $allAccumulated = session()->get('json_converter_accumulated', []);
+        $this->itemsCount = count($allAccumulated);
+
+        // Store full batch in download buffer
+        session()->put('json_converter_completed_batch', $allAccumulated);
+
+        // Create lightweight preview (first 3 items) to prevent Livewire state payload bloat
+        $previewItems = array_slice($allAccumulated, 0, 3);
+        $this->convertedJson = json_encode($previewItems, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        if (count($allAccumulated) > 3) {
+            $this->convertedJson .= "\n\n// ... and ".(count($allAccumulated) - 3)." more items. Click 'Download Full JSON File' to get complete batch!";
+        }
+
+        $this->processingLog = session()->get('json_converter_logs', []);
+        $this->statusMessage = "BATCH COMPLETE! Processed {$this->processedFileCount} files, generated {$this->itemsCount} viva Q&A items, and stored all records into {$this->examType} Question Bank Database!";
+
+        // Flush active session buffers
+        session()->forget('json_converter_accumulated');
+        session()->forget('json_converter_logs');
+    }
+
+    /**
+     * Download the full accumulated JSON from batch execution directly as a file.
+     */
+    public function downloadBatchJson()
+    {
+        $allAccumulated = session()->get('json_converter_completed_batch', []);
+        if (empty($allAccumulated)) {
+            $this->statusMessage = 'No batch JSON data available for download.';
+
+            return null;
+        }
+
+        $filename = strtolower($this->examType).'_viva_batch_export_'.date('Y-m-d_H-i').'.json';
+        $content = json_encode($allAccumulated, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        return response()->streamDownload(function () use ($content) {
+            echo $content;
+        }, $filename, [
+            'Content-Type' => 'application/json',
+        ]);
     }
 
     /**

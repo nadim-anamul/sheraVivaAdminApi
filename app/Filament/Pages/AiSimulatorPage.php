@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\VivaSessionLog;
 use App\Services\GeminiAiService;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -13,7 +14,7 @@ class AiSimulatorPage extends Page
 
     protected static ?string $navigationLabel = 'AI Viva Simulator';
 
-    protected static ?string $title = 'Gemini 3.5 Flash - AI Mock Viva Simulator';
+    protected static ?string $title = 'Gemini AI - Adaptive Viva Board Simulator';
 
     protected string $view = 'filament.pages.ai-simulator';
 
@@ -31,14 +32,24 @@ class AiSimulatorPage extends Page
 
     public ?array $currentEvaluation = null;
 
+    public ?array $finalEvaluation = null;
+
     public string $statusMessage = '';
 
     public bool $isSessionActive = false;
 
+    public bool $isConcluded = false;
+
+    public int $questionCount = 0;
+
+    public int $minQuestions = 5;
+
+    public int $maxQuestions = 15;
+
     public array $expectedKeyPoints = [];
 
     /**
-     * Start the AI mock session and generate the first question using RAG.
+     * Start the AI mock session and generate Question #1.
      */
     public function startSession(GeminiAiService $gemini): void
     {
@@ -51,7 +62,10 @@ class AiSimulatorPage extends Page
         $this->statusMessage = 'Querying past transcripts and preparing AI board setup...';
         $this->transcriptHistory = [];
         $this->currentEvaluation = null;
+        $this->finalEvaluation = null;
         $this->candidateAnswer = '';
+        $this->questionCount = 1;
+        $this->isConcluded = false;
 
         try {
             $response = $gemini->generateVivaQuestion(
@@ -59,11 +73,12 @@ class AiSimulatorPage extends Page
                 [],
                 $this->examType,
                 $this->position,
-                $this->candidateCv
+                $this->candidateCv,
+                1
             );
 
             if (!empty($response)) {
-                $this->currentQuestion = $response['question'] ?? 'Introduce yourself and state your choices.';
+                $this->currentQuestion = $response['question'] ?? 'Introduce yourself and state your key choices.';
                 $this->expectedKeyPoints = $response['expected_key_points'] ?? [];
 
                 $this->transcriptHistory[] = [
@@ -72,7 +87,7 @@ class AiSimulatorPage extends Page
                 ];
 
                 $this->isSessionActive = true;
-                $this->statusMessage = 'Mock interview session started!';
+                $this->statusMessage = 'Question 1 (Adaptive Board Session: 5 to 15 questions)';
             } else {
                 $this->statusMessage = 'Failed to generate first question. Verify your API key.';
             }
@@ -82,7 +97,7 @@ class AiSimulatorPage extends Page
     }
 
     /**
-     * Submit candidate response, evaluate it, and generate the next board question.
+     * Submit candidate response, evaluate turn, and adaptively advance or conclude.
      */
     public function submitAnswer(GeminiAiService $gemini): void
     {
@@ -90,10 +105,10 @@ class AiSimulatorPage extends Page
             'candidateAnswer' => 'required|string|min:5',
         ]);
 
-        $this->statusMessage = 'AI Board is evaluating your answer and planning the next question...';
+        $this->statusMessage = 'AI Board is evaluating your response...';
 
         try {
-            // 1. Evaluate the answer
+            // 1. Evaluate single answer
             $eval = $gemini->evaluateAnswer(
                 $this->currentQuestion,
                 $this->candidateAnswer,
@@ -108,46 +123,111 @@ class AiSimulatorPage extends Page
                 'text' => $this->candidateAnswer,
             ];
 
-            // 3. Generate the next question based on history and RAG context
+            // 3. Check hard cap limit (15 questions)
+            if ($this->questionCount >= $this->maxQuestions) {
+                $this->concludeSession($gemini);
+
+                return;
+            }
+
+            // 4. Query AI Board for next turn or adaptive conclusion (if >= 5 questions)
+            $nextCount = $this->questionCount + 1;
             $response = $gemini->generateVivaQuestion(
                 "{$this->examType} {$this->position} Mock Board",
                 $this->transcriptHistory,
                 $this->examType,
                 $this->position,
-                $this->candidateCv
+                $this->candidateCv,
+                $nextCount
             );
 
             if (!empty($response)) {
-                $this->currentQuestion = $response['question'] ?? 'Thank you. The board has concluded your viva.';
-                $this->expectedKeyPoints = $response['expected_key_points'] ?? [];
+                $isBoardConcluded = ($response['is_concluded'] ?? false) && ($nextCount > $this->minQuestions);
 
-                $this->transcriptHistory[] = [
-                    'speaker' => $response['speaker'] ?? 'Board Member',
-                    'text' => $this->currentQuestion,
-                ];
+                if ($isBoardConcluded) {
+                    $this->transcriptHistory[] = [
+                        'speaker' => $response['speaker'] ?? 'Chairman',
+                        'text' => $response['question'] ?? 'Thank you. The board has concluded your viva.',
+                    ];
+                    $this->concludeSession($gemini);
+                } else {
+                    $this->questionCount = $nextCount;
+                    $this->currentQuestion = $response['question'] ?? 'What are your primary goals in this service?';
+                    $this->expectedKeyPoints = $response['expected_key_points'] ?? [];
 
-                $this->candidateAnswer = '';
-                $this->statusMessage = 'Next question generated!';
+                    $this->transcriptHistory[] = [
+                        'speaker' => $response['speaker'] ?? 'Board Member',
+                        'text' => $this->currentQuestion,
+                    ];
+
+                    $this->candidateAnswer = '';
+                    $this->statusMessage = "Question {$this->questionCount} of 15 (Board evaluating live suitability...)";
+                }
             } else {
-                $this->isSessionActive = false;
-                $this->statusMessage = 'Interview session concluded by the board.';
+                $this->concludeSession($gemini);
             }
-
         } catch (\Exception $e) {
             $this->statusMessage = 'Error processing turn: '.$e->getMessage();
         }
     }
 
     /**
-     * Conclude and reset the active session.
+     * Conclude session, perform overall evaluation out of 100, and save to DB.
+     */
+    public function concludeSession(GeminiAiService $gemini): void
+    {
+        $this->statusMessage = 'Calculating final board marks and compiling overall evaluation report...';
+
+        try {
+            $finalReport = $gemini->evaluateFullSessionTranscript(
+                $this->transcriptHistory,
+                $this->examType,
+                $this->position,
+                $this->candidateCv
+            );
+
+            $this->finalEvaluation = $finalReport;
+            $this->isConcluded = true;
+            $this->isSessionActive = false;
+
+            // Save completed session into DB
+            VivaSessionLog::create([
+                'user_id' => auth()->id(),
+                'candidate_name' => auth()->user()?->name ?? 'Candidate',
+                'exam_type' => $this->examType,
+                'position' => $this->position,
+                'candidate_cv' => $this->candidateCv,
+                'total_questions' => $this->questionCount,
+                'overall_score' => $finalReport['overall_score'] ?? 75,
+                'verdict' => $finalReport['verdict'] ?? 'Recommended',
+                'score_breakdown' => $finalReport['score_breakdown'] ?? [],
+                'board_feedback' => $finalReport['board_feedback'] ?? null,
+                'recommendations' => $finalReport['recommendations'] ?? null,
+                'transcript' => $this->transcriptHistory,
+                'completed_at' => now(),
+            ]);
+
+            $score = $finalReport['overall_score'] ?? 75;
+            $verdict = $finalReport['verdict'] ?? 'Recommended';
+            $this->statusMessage = "VIVA CONCLUDED ({$this->questionCount} Questions Asked)! Final Board Marks: {$score}/100 ({$verdict}). Record saved in Dashboard!";
+        } catch (\Exception $e) {
+            $this->statusMessage = 'Error concluding session: '.$e->getMessage();
+        }
+    }
+
+    /**
+     * Reset the active session.
      */
     public function resetSession(): void
     {
         $this->isSessionActive = false;
+        $this->isConcluded = false;
         $this->currentQuestion = '';
         $this->candidateAnswer = '';
         $this->currentEvaluation = null;
+        $this->finalEvaluation = null;
         $this->transcriptHistory = [];
-        $this->statusMessage = 'Session concluded and reset.';
+        $this->questionCount = 0;
+        $this->statusMessage = 'Session reset. Ready for a new viva.';
     }
 }

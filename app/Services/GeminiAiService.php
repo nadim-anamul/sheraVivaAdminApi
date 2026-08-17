@@ -154,15 +154,16 @@ PROMPT;
      */
     public function generateVivaQuestion(
         string $categoryTitle,
-        array $transcriptHistory = [],
+        array $history = [],
         string $examType = 'BCS',
-        string $position = 'General',
-        string $candidateCv = ''
+        string $position = '',
+        string $candidateCv = '',
+        int $currentQuestionCount = 1
     ): array {
         $historyText = '';
-        foreach ($transcriptHistory as $item) {
-            $speaker = $item['speaker'] ?? 'User';
-            $text = $item['text'] ?? '';
+        foreach ($history as $step) {
+            $speaker = $step['speaker'] ?? 'Interviewer';
+            $text = $step['text'] ?? '';
             $historyText .= "{$speaker}: {$text}\n";
         }
 
@@ -226,26 +227,42 @@ PROMPT;
             }
         }
 
+        $conclusionGuidance = '';
+        if ($currentQuestionCount >= 5) {
+            $conclusionGuidance = <<<GUIDANCE
+CRITICAL ADAPTIVE VIVA DECISION INSTRUCTION:
+The candidate has completed {$currentQuestionCount} questions (Minimum required: 5, Hard Cap Maximum: 15).
+Evaluate the candidate's performance across the transcript history:
+1. If the candidate has demonstrated clear, decisive mastery OR clear, irrecoverable failure, conclude the viva session now. Set "is_concluded": true and provide a polite closing statement as the question string (e.g. "Thank you candidate. The board has concluded your viva session.").
+2. If the candidate's performance is borderline or requires further probing into specific weak areas, set "is_concluded": false and generate the next probing question.
+GUIDANCE;
+        } else {
+            $conclusionGuidance = "This is Question #{$currentQuestionCount} (Minimum 5 questions required before conclusion). Set 'is_concluded': false and generate the next board question.";
+        }
+
         $prompt = <<<PROMPT
 You are a highly distinguished Bangladeshi Viva Board Chairman for '{$categoryTitle}'.
 Target Position: {$position}
 Exam Type: {$examType}
 Candidate Profile/CV: {$candidateCv}
 
-Your goal is to conduct a highly realistic, professional, and rigorous job interview (in Bangla/English mixed naturally as done in real BPSC/Bank/Primary boards).
+Your goal is to conduct a highly realistic, professional, and adaptive job interview (in Bangla/English mixed naturally as done in real BPSC/Bank/Primary boards).
 
 {$realExamplesContext}
 
 Previous Conversation History:
 {$historyText}
 
-Based on the candidate's CV/bio, target position, real past board examples, and the ongoing conversation history, generate the NEXT viva board question for the candidate. Focus on testing their technical/academic knowledge, situational judgement, general awareness, and critically, their knowledge of recent national/international events, contemporary policy reforms, and current affairs in Bangladesh.
+{$conclusionGuidance}
+
+Based on the candidate's CV/bio, target position, real past board examples, and the ongoing conversation history, generate the NEXT viva board step. Focus on testing technical/academic knowledge, legal/constitutional awareness, and situational stress handling.
 
 Return a structured JSON object:
 {
-  "question_no": number of question in session,
+  "question_no": {$currentQuestionCount},
   "speaker": "Chairman" or "Board Member 1" or "Board Member 2",
-  "question": "The question string in Bangla/English",
+  "question": "The question string or board closing statement",
+  "is_concluded": false,
   "context_hint": "Brief background hint on why this question is being asked",
   "expected_key_points": ["Key concept 1", "Key concept 2"]
 }
@@ -445,6 +462,63 @@ PROMPT;
             'message' => "Successfully synthesized {$count} micro-batches!",
             'count' => $count,
         ];
+    }
+
+    /**
+     * Evaluate a complete viva interview transcript to generate overall board marks out of 100,
+     * category score breakdown, executive board feedback, and candidate recommendation verdict.
+     */
+    public function evaluateFullSessionTranscript(array $transcriptHistory, string $examType, string $position = '', string $candidateCv = ''): array
+    {
+        $transcriptText = '';
+        foreach ($transcriptHistory as $step) {
+            $spk = $step['speaker'] ?? 'Interviewer';
+            $txt = $step['text'] ?? '';
+            $transcriptText .= "{$spk}: {$txt}\n";
+        }
+
+        $prompt = <<<PROMPT
+You are the Honorable Chairman of a Bangladeshi BPSC & Bank Viva Board evaluating a candidate who just completed their viva.
+Exam Category: {$examType}
+Position: {$position}
+Candidate Profile: {$candidateCv}
+
+Complete Board Interview Transcript:
+{$transcriptText}
+
+Evaluate the candidate's overall performance across the entire viva session and return a structured JSON evaluation report:
+{
+  "overall_score": 82,
+  "verdict": "Recommended for {$examType} {$position}",
+  "score_breakdown": {
+    "academic_subject_knowledge": 25,
+    "legal_policy_constitution": 26,
+    "cadre_personality_aptitude": 22,
+    "communication_stress_handling": 9
+  },
+  "board_feedback": "2-3 sentences summarizing the candidate's core strengths, legal knowledge, and board presence during the viva.",
+  "recommendations": "1-2 actionable tips for candidate improvement."
+}
+PROMPT;
+
+        $result = $this->callGeminiJson($prompt, $this->evaluationModel);
+
+        if (empty($result) || !is_array($result)) {
+            return [
+                'overall_score' => 75,
+                'verdict' => 'Recommended',
+                'score_breakdown' => [
+                    'academic_subject_knowledge' => 22,
+                    'legal_policy_constitution' => 22,
+                    'cadre_personality_aptitude' => 20,
+                    'communication_stress_handling' => 11,
+                ],
+                'board_feedback' => 'The candidate showed satisfactory communication and domain awareness throughout the viva board session.',
+                'recommendations' => 'Review recent constitutional amendments and contemporary economic affairs.',
+            ];
+        }
+
+        return $result;
     }
 
     /**

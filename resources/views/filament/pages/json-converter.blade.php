@@ -390,13 +390,22 @@
                     <h3 style="font-size: 17px; font-weight: 800; color: #10B981; display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-code"></i> Batch Generated JSON Output ({{ $itemsCount }} Items Total)
                     </h3>
-                    <button 
-                        wire:click="saveToQuestionBank" 
-                        type="button"
-                        style="background: #3B82F6; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: gap: 6px;"
-                    >
-                        <i class="fa-solid fa-database"></i> Force Re-Save to {{ $examType }} Question Bank
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <button 
+                            wire:click="downloadBatchJson" 
+                            type="button"
+                            style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;"
+                        >
+                            <i class="fa-solid fa-download"></i> Download Full JSON File ({{ $itemsCount }} Items)
+                        </button>
+                        <button 
+                            wire:click="saveToQuestionBank" 
+                            type="button"
+                            style="background: #3B82F6; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"
+                        >
+                            <i class="fa-solid fa-database"></i> Re-Save to {{ $examType }} Bank
+                        </button>
+                    </div>
                 </div>
 
                 <textarea 

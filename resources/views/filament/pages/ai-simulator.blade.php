@@ -1,4 +1,7 @@
 <x-filament-panels::page>
+    <!-- Load FontAwesome stylesheet inside Filament Admin view -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <style>
         .simulator-layout {
             display: grid;
@@ -93,6 +96,14 @@
             font-weight: 600;
         }
 
+        .final-score-card {
+            background: linear-gradient(135deg, #064E3B 0%, #065F46 50%, #1E3A8A 100%);
+            color: #ffffff;
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(6, 95, 70, 0.2);
+        }
+
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -126,31 +137,42 @@
 
             <div>
                 <label style="display: block; font-size: 13px; font-weight: 700; color: #4B5563; margin-bottom: 6px;" class="dark:text-gray-300">Candidate Bio / CV Context</label>
-                <textarea wire:model="candidateCv" rows="5" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 13px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Enter target subject, background, district..." :disabled="isSessionActive"></textarea>
+                <textarea wire:model="candidateCv" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 13px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Enter target subject, background, district..." :disabled="isSessionActive"></textarea>
             </div>
 
-            @if(!$isSessionActive)
+            @if(!$isSessionActive && !$isConcluded)
                 <button wire:click="startSession" wire:loading.attr="disabled" class="btn-emerald" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: white; padding: 12px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
                     <span wire:loading.remove wire:target="startSession">
                         <i class="fa-solid fa-circle-play"></i> Start Mock Viva Session
                     </span>
                     <span wire:loading wire:target="startSession" style="display: none;">
-                        <svg class="animate-spin" style="display: inline-block; vertical-align: middle; width: 20px; height: 20px; color: white; margin-right: 8px;" fill="none" viewBox="0 0 24 24">
-                            <circle style="opacity: 0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path style="opacity: 0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Preparing Board...
+                        <i class="fa-solid fa-spinner fa-spin"></i> Preparing Board...
                     </span>
                 </button>
+            @elseif($isSessionActive)
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button wire:click="concludeSession" wire:loading.attr="disabled" style="background: #3B82F6; color: white; padding: 10px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                        <span wire:loading.remove wire:target="concludeSession">
+                            <i class="fa-solid fa-flag-checkered"></i> Conclude Viva & Get Final Score
+                        </span>
+                        <span wire:loading wire:target="concludeSession" style="display: none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Calculating Marks...
+                        </span>
+                    </button>
+                    
+                    <button wire:click="resetSession" style="background: #EF4444; color: white; padding: 10px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Session
+                    </button>
+                </div>
             @else
-                <button wire:click="resetSession" style="background: #EF4444; color: white; padding: 12px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
-                    <i class="fa-solid fa-circle-stop"></i> End Session & Reset
+                <button wire:click="resetSession" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: white; padding: 12px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                    <i class="fa-solid fa-plus"></i> Start New Viva Session
                 </button>
             @endif
 
             @if($statusMessage)
-                <div style="font-size: 13px; font-weight: 600; color: #4B5563; padding: 8px 12px; border-radius: 6px; background: #F3F4F6;" class="dark:bg-gray-800 dark:text-gray-300">
-                    <i class="fa-solid fa-info-circle" style="color: #10B981;"></i> {{ $statusMessage }}
+                <div style="font-size: 13px; font-weight: 600; color: #4B5563; padding: 10px 12px; border-radius: 8px; background: #F3F4F6;" class="dark:bg-gray-800 dark:text-gray-300">
+                    <i class="fa-solid fa-circle-info" style="color: #10B981;"></i> {{ $statusMessage }}
                 </div>
             @endif
         </div>
@@ -158,12 +180,77 @@
         <!-- Right Side: Active Chat Timeline & AI Scorecard -->
         <div style="display: flex; flex-direction: column; gap: 24px;">
             
+            <!-- Final Evaluation Summary Scorecard (when session is concluded) -->
+            @if($isConcluded && $finalEvaluation)
+                <div class="final-score-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 16px;">
+                        <div>
+                            <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85;">Final Board Marks & Result</span>
+                            <h2 style="font-size: 24px; font-weight: 800; margin-top: 2px;">{{ $finalEvaluation['verdict'] ?? 'Recommended' }}</h2>
+                        </div>
+
+                        <div style="width: 90px; height: 90px; border-radius: 50%; background: #ffffff; color: #065F46; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+                            <span style="font-size: 26px; font-weight: 900; line-height: 1;">{{ $finalEvaluation['overall_score'] ?? 80 }}</span>
+                            <span style="font-size: 11px; font-weight: 700; color: #6B7280;">/ 100</span>
+                        </div>
+                    </div>
+
+                    <!-- Category Score Breakdown -->
+                    @if(!empty($finalEvaluation['score_breakdown']))
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                            <div style="background: rgba(255,255,255,0.1); padding: 12px 14px; border-radius: 10px;">
+                                <div style="font-size: 11px; opacity: 0.85; font-weight: 700; text-transform: uppercase;">Academic Knowledge</div>
+                                <div style="font-size: 18px; font-weight: 800; margin-top: 2px;">{{ $finalEvaluation['score_breakdown']['academic_subject_knowledge'] ?? 24 }} / 30</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 12px 14px; border-radius: 10px;">
+                                <div style="font-size: 11px; opacity: 0.85; font-weight: 700; text-transform: uppercase;">Laws & Constitution</div>
+                                <div style="font-size: 18px; font-weight: 800; margin-top: 2px;">{{ $finalEvaluation['score_breakdown']['legal_policy_constitution'] ?? 25 }} / 30</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 12px 14px; border-radius: 10px;">
+                                <div style="font-size: 11px; opacity: 0.85; font-weight: 700; text-transform: uppercase;">Cadre Personality</div>
+                                <div style="font-size: 18px; font-weight: 800; margin-top: 2px;">{{ $finalEvaluation['score_breakdown']['cadre_personality_aptitude'] ?? 20 }} / 25</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 12px 14px; border-radius: 10px;">
+                                <div style="font-size: 11px; opacity: 0.85; font-weight: 700; text-transform: uppercase;">Stress Handling</div>
+                                <div style="font-size: 18px; font-weight: 800; margin-top: 2px;">{{ $finalEvaluation['score_breakdown']['communication_stress_handling'] ?? 11 }} / 15</div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Executive Board Feedback -->
+                    @if(!empty($finalEvaluation['board_feedback']))
+                        <div style="margin-bottom: 16px;">
+                            <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; margin-bottom: 4px;">
+                                <i class="fa-solid fa-user-tie"></i> Chairman Executive Board Feedback:
+                            </h4>
+                            <p style="font-size: 14px; opacity: 0.95; line-height: 1.6;">
+                                {{ $finalEvaluation['board_feedback'] }}
+                            </p>
+                        </div>
+                    @endif
+
+                    <!-- Recommendations -->
+                    @if(!empty($finalEvaluation['recommendations']))
+                        <div>
+                            <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; margin-bottom: 4px;">
+                                <i class="fa-solid fa-lightbulb"></i> Strategic Board Recommendations:
+                            </h4>
+                            <p style="font-size: 14px; opacity: 0.95; line-height: 1.6; white-space: pre-line;">
+                                {{ $finalEvaluation['recommendations'] }}
+                            </p>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
             @if($isSessionActive)
                 <!-- Live Conversation timeline -->
                 <div class="chat-container">
                     <div style="font-weight: 800; font-size: 15px; border-bottom: 1px solid #E5E7EB; padding-bottom: 10px; display: flex; align-items: center; justify-content: space-between;" class="dark:border-gray-800">
                         <span style="color: #10B981;"><i class="fa-solid fa-podcast"></i> Live Board Interview Transcript</span>
-                        <span style="font-size: 11px; background: rgba(16, 185, 129, 0.1); padding: 3px 8px; border-radius: 20px;">Active Session</span>
+                        <span style="font-size: 12px; background: rgba(16, 185, 129, 0.15); color: #047857; padding: 4px 12px; border-radius: 20px; font-weight: 800;" class="dark:text-emerald-400">
+                            Question {{ $questionCount }} (Min 5, Max 15)
+                        </span>
                     </div>
 
                     <!-- Chat Bubbles -->
@@ -196,7 +283,9 @@
 
                     <!-- Active Board Question Statement -->
                     <div style="background: #EFF6FF; border: 1px solid #3B82F6; padding: 16px; border-radius: 10px;" class="dark:bg-blue-950/20 dark:border-blue-800">
-                        <span style="font-size: 12px; font-weight: 800; color: #1D4ED8; text-transform: uppercase;" class="dark:text-blue-400">Active Board Question:</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; font-weight: 800; color: #1D4ED8; text-transform: uppercase;" class="dark:text-blue-400">Active Board Question ({{ $questionCount }}/{{ $maxQuestions }}):</span>
+                        </div>
                         <p style="font-size: 15px; font-weight: 700; color: #1E3A8A; margin-top: 4px;" class="dark:text-blue-200">{{ $currentQuestion }}</p>
                     </div>
 
@@ -207,14 +296,10 @@
                         <div style="display: flex; gap: 12px; justify-content: flex-end;">
                             <button wire:click="submitAnswer" wire:loading.attr="disabled" class="btn-emerald" style="background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%); color: white; padding: 10px 24px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                 <span wire:loading.remove wire:target="submitAnswer">
-                                    <i class="fa-solid fa-paper-plane"></i> Submit Answer & Get Next Question
+                                    <i class="fa-solid fa-paper-plane"></i> Submit Answer & Next Turn
                                 </span>
                                 <span wire:loading wire:target="submitAnswer" style="display: none;">
-                                    <svg class="animate-spin" style="display: inline-block; vertical-align: middle; width: 20px; height: 20px; color: white; margin-right: 8px;" fill="none" viewBox="0 0 24 24">
-                                        <circle style="opacity: 0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path style="opacity: 0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Evaluating...
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Evaluating Answer...
                                 </span>
                             </button>
                         </div>
@@ -226,7 +311,7 @@
                     <div class="evaluation-card" style="display: flex; flex-direction: column; gap: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(16, 185, 129, 0.2); padding-bottom: 12px;">
                             <h3 style="font-size: 17px; font-weight: 800;">
-                                <i class="fa-solid fa-square-poll-vertical"></i> AI Performance Scorecard (Last Turn)
+                                <i class="fa-solid fa-square-poll-vertical"></i> Turn Evaluation (Question {{ $questionCount }})
                             </h3>
                             <div class="score-badge">
                                 <span>{{ $currentEvaluation['score'] }}</span>
@@ -286,12 +371,12 @@
                     </div>
                 @endif
 
-            @else
+            @elseif(!$isConcluded)
                 <div style="background: #ffffff; border: 1px solid #E5E7EB; padding: 40px; border-radius: 16px; text-align: center; color: #6B7280;" class="dark:bg-gray-900 dark:border-gray-800">
                     <i class="fa-solid fa-comments" style="font-size: 48px; color: #E5E7EB; margin-bottom: 16px;"></i>
                     <h3 style="font-size: 18px; font-weight: 700; color: #1F2937;" class="dark:text-white">AI Viva Simulator Idle</h3>
                     <p style="font-size: 14px; margin-top: 4px; max-width: 400px; margin-left: auto; margin-right: auto;">
-                        Set up the candidate's target exam type, position, and profile on the left sidebar to start a simulated mock interview.
+                        Set up the candidate's target exam type, position, and profile on the left sidebar to start a 5-question simulated mock interview.
                     </p>
                 </div>
             @endif
