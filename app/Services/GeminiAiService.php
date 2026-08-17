@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ExamKnowledgeBank;
 use App\Models\QuestionBank;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -165,33 +166,63 @@ PROMPT;
             $historyText .= "{$speaker}: {$text}\n";
         }
 
-        // Fetch up to 3 relevant past viva transcripts from DB matching the exam type and position/subject (RAG)
-        $relevantExperiences = QuestionBank::where('exam_type', $examType)
-            ->where(function ($query) use ($position, $candidateCv) {
+        // 1. First attempt to load pre-synthesized compact ExamKnowledgeBank card for this exam_type & position
+        $knowledgeCard = ExamKnowledgeBank::where('exam_type', $examType)
+            ->where(function ($query) use ($position) {
                 if (!empty($position)) {
-                    $query->orWhere('title', 'like', "%{$position}%")
-                        ->orWhere('subject', 'like', "%{$position}%");
-                }
-                if (!empty($candidateCv)) {
-                    $query->orWhere('subject', 'like', "%{$candidateCv}%");
+                    $query->orWhere('subject_category', 'like', "%{$position}%")
+                        ->orWhere('title', 'like', "%{$position}%");
                 }
             })
-            ->limit(3)
-            ->get();
+            ->latest('last_synthesized_at')
+            ->first();
+
+        if (!$knowledgeCard) {
+            // Fallback to General card for that exam_type
+            $knowledgeCard = ExamKnowledgeBank::where('exam_type', $examType)->latest('last_synthesized_at')->first();
+        }
 
         $realExamplesContext = '';
-        if ($relevantExperiences->isNotEmpty()) {
-            $realExamplesContext = "Here is context from REAL past board viva transcripts matching this exam/position:\n";
-            foreach ($relevantExperiences as $index => $exp) {
-                $realExamplesContext .= 'Example '.($index + 1).' ('.$exp->title."):\n";
-                if (is_array($exp->transcript)) {
-                    foreach (array_slice($exp->transcript, 0, 4) as $exStep) {
-                        $speaker = $exStep['speaker'] ?? 'Interviewer';
-                        $text = $exStep['text'] ?? '';
-                        $realExamplesContext .= "  - {$speaker}: {$text}\n";
-                    }
+        if ($knowledgeCard) {
+            $realExamplesContext = "PRE-COMPILED AUTHENTIC BOARD KNOWLEDGE MATRIX ({$knowledgeCard->title}, indexed from {$knowledgeCard->source_items_count} real board records):\n";
+            $realExamplesContext .= 'Board Interrogation Tone & Traps: '.$knowledgeCard->chairman_style."\n";
+            $realExamplesContext .= 'Core High-Frequency Topics: '.implode(', ', $knowledgeCard->core_topics ?? [])."\n\n";
+            $realExamplesContext .= "High-Frequency Questions Pool:\n";
+            if (is_array($knowledgeCard->top_questions)) {
+                foreach (array_slice($knowledgeCard->top_questions, 0, 6) as $idx => $tq) {
+                    $qStr = $tq['question'] ?? '';
+                    $top = $tq['topic'] ?? '';
+                    $realExamplesContext .= '  '.($idx + 1).". [{$top}] {$qStr}\n";
                 }
-                $realExamplesContext .= "\n";
+            }
+        } else {
+            // Fallback to querying 3 raw transcripts if no synthesized matrix exists yet
+            $relevantExperiences = QuestionBank::where('exam_type', $examType)
+                ->where(function ($query) use ($position, $candidateCv) {
+                    if (!empty($position)) {
+                        $query->orWhere('title', 'like', "%{$position}%")
+                            ->orWhere('subject', 'like', "%{$position}%");
+                    }
+                    if (!empty($candidateCv)) {
+                        $query->orWhere('subject', 'like', "%{$candidateCv}%");
+                    }
+                })
+                ->limit(3)
+                ->get();
+
+            if ($relevantExperiences->isNotEmpty()) {
+                $realExamplesContext = "Here is context from REAL past board viva transcripts matching this exam/position:\n";
+                foreach ($relevantExperiences as $index => $exp) {
+                    $realExamplesContext .= 'Example '.($index + 1).' ('.$exp->title."):\n";
+                    if (is_array($exp->transcript)) {
+                        foreach (array_slice($exp->transcript, 0, 4) as $exStep) {
+                            $speaker = $exStep['speaker'] ?? 'Interviewer';
+                            $text = $exStep['text'] ?? '';
+                            $realExamplesContext .= "  - {$speaker}: {$text}\n";
+                        }
+                    }
+                    $realExamplesContext .= "\n";
+                }
             }
         }
 
@@ -221,6 +252,115 @@ Return a structured JSON object:
 PROMPT;
 
         return $this->callGeminiJson($prompt, $this->conversationModel);
+    }
+
+    /**
+     * Synthesize all QuestionBank records grouped by exam_type & subject into compact ExamKnowledgeBank cards using AI.
+     */
+    public function synthesizeExamKnowledge(?string $targetExamType = null): array
+    {
+        $query = QuestionBank::query();
+        if (!empty($targetExamType)) {
+            $query->where('exam_type', $targetExamType);
+        }
+
+        $allBankRecords = $query->get();
+        if ($allBankRecords->isEmpty()) {
+            return [
+                'status' => 'warning',
+                'message' => 'No QuestionBank records found to synthesize.',
+                'count' => 0,
+            ];
+        }
+
+        // Group records by exam_type
+        $grouped = $allBankRecords->groupBy('exam_type');
+        $synthesizedCount = 0;
+
+        foreach ($grouped as $examType => $records) {
+            // Further group by major categories/subjects if enough records
+            $subjectGroups = $records->groupBy(function ($item) {
+                $sub = trim($item->subject ?? '');
+                if (empty($sub) || strtolower($sub) === 'n/a' || strtolower($sub) === 'general') {
+                    return 'General';
+                }
+
+                return $sub;
+            });
+
+            foreach ($subjectGroups as $subjectCat => $catRecords) {
+                // Prepare raw text summary of the questions and transcripts for Gemini
+                $sampleText = "Exam Type: {$examType}\nCategory/Subject: {$subjectCat}\nTotal Records: ".$catRecords->count()."\n\n";
+
+                foreach ($catRecords as $index => $rec) {
+                    $sampleText .= '--- Record #'.($index + 1).": {$rec->title} (Board: {$rec->board}, Result: {$rec->result}) ---\n";
+                    if (!empty($rec->remarks)) {
+                        $sampleText .= "Remarks: {$rec->remarks}\n";
+                    }
+                    if (is_array($rec->transcript)) {
+                        foreach (array_slice($rec->transcript, 0, 8) as $t) {
+                            $spk = $t['speaker'] ?? 'Interviewer';
+                            $txt = $t['text'] ?? '';
+                            $sampleText .= "  {$spk}: {$txt}\n";
+                        }
+                    }
+                    $sampleText .= "\n";
+                }
+
+                $prompt = <<<PROMPT
+You are a senior Bangladeshi BPSC & Bank Viva Board analyst.
+Analyze the real candidate viva experiences below for Exam: '{$examType}' and Category/Subject: '{$subjectCat}'.
+
+Your objective is to extract a highly condensed, authoritative Knowledge Matrix that will guide an AI Viva Simulator to generate authentic questions with minimal token usage.
+
+Input Records:
+{$sampleText}
+
+Return a structured JSON object:
+{
+  "title": "Clean Title, e.g. {$examType} {$subjectCat} Board Question Matrix",
+  "top_questions": [
+    {
+      "topic": "Topic Name (e.g. Constitution Art 55, Mobile Court Act, Monetary Policy)",
+      "question": "Representative high-frequency board question in Bangla/English",
+      "expected_key_points": ["Key concept 1", "Key concept 2"]
+    }
+  ],
+  "core_topics": [
+    "Key law, reform, or contemporary affair topic 1",
+    "Key law, reform, or contemporary affair topic 2"
+  ],
+  "chairman_style": "1-2 sentence description of board chairman interrogation style and candidate pressure points"
+}
+PROMPT;
+
+                $response = $this->callGeminiJson($prompt, $this->conversationModel);
+
+                if (!empty($response) && is_array($response)) {
+                    ExamKnowledgeBank::updateOrCreate(
+                        [
+                            'exam_type' => $examType,
+                            'subject_category' => $subjectCat,
+                        ],
+                        [
+                            'title' => $response['title'] ?? "{$examType} {$subjectCat} Board Matrix",
+                            'top_questions' => $response['top_questions'] ?? [],
+                            'core_topics' => $response['core_topics'] ?? [],
+                            'chairman_style' => $response['chairman_style'] ?? 'Demands crisp legal and policy precision.',
+                            'source_items_count' => $catRecords->count(),
+                            'last_synthesized_at' => now(),
+                        ]
+                    );
+                    $synthesizedCount++;
+                }
+            }
+        }
+
+        return [
+            'status' => 'success',
+            'message' => "Successfully synthesized {$synthesizedCount} viva knowledge cards from ".$allBankRecords->count().' QuestionBank records!',
+            'count' => $synthesizedCount,
+        ];
     }
 
     /**
