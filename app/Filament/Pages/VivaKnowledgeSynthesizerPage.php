@@ -25,24 +25,53 @@ class VivaKnowledgeSynthesizerPage extends Page
 
     public bool $isSynthesizing = false;
 
+    public int $currentStepIndex = 0;
+
+    public int $totalStepCount = 0;
+
+    public array $pendingCategories = [];
+
     /**
-     * Trigger AI synthesis across QuestionBank records.
+     * Start the stepped category synthesis queue.
      */
-    public function runSynthesis(GeminiAiService $gemini, ?string $examType = null): void
+    public function startBatchSynthesis(array $categories = []): void
     {
+        if (empty($categories)) {
+            $categories = QuestionBank::distinct()->pluck('exam_type')->toArray();
+            if (empty($categories)) {
+                $categories = ['BCS', 'Bank', 'Primary', 'Other'];
+            }
+        }
+
         $this->isSynthesizing = true;
-        $target = ($examType && $examType !== 'All') ? $examType : null;
-        $targetLabel = $target ?: 'All Exam Categories';
+        $this->pendingCategories = array_values(array_unique($categories));
+        $this->totalStepCount = count($this->pendingCategories);
+        $this->currentStepIndex = 0;
+        $this->statusMessage = "Starting step-by-step synthesis for {$this->totalStepCount} category groups...";
+    }
 
-        $this->statusMessage = "Analyzing Question Bank data & compiling AI Exam Knowledge Matrices for {$targetLabel}...";
-
+    /**
+     * Process ONE single exam category step safely within 3-5 seconds.
+     */
+    public function processCategoryStep(GeminiAiService $gemini, string $examType): void
+    {
         try {
-            $result = $gemini->synthesizeExamKnowledge($target);
-            $this->statusMessage = $result['message'] ?? 'Synthesis completed!';
+            $result = $gemini->synthesizeExamKnowledge($examType);
+
+            $this->currentStepIndex++;
+
+            if ($this->currentStepIndex >= $this->totalStepCount) {
+                $this->isSynthesizing = false;
+                $this->statusMessage = "COMPLETED! Synthesized all {$this->totalStepCount} exam knowledge matrices successfully!";
+            } else {
+                $this->statusMessage = "Synthesized {$examType} matrix ({$this->currentStepIndex}/{$this->totalStepCount}). Processing next category...";
+            }
         } catch (\Exception $e) {
-            $this->statusMessage = 'Synthesis failed: '.$e->getMessage();
-        } finally {
-            $this->isSynthesizing = false;
+            $this->currentStepIndex++;
+            $this->statusMessage = "Error synthesizing {$examType}: ".$e->getMessage();
+            if ($this->currentStepIndex >= $this->totalStepCount) {
+                $this->isSynthesizing = false;
+            }
         }
     }
 
