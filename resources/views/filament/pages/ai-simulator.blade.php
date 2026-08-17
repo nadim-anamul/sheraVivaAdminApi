@@ -104,60 +104,73 @@
         <!-- Sidebar Configuration Card -->
         <div class="converter-card" style="display: flex; flex-direction: column; gap: 14px; background: #ffffff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px;" class="dark:bg-gray-900 dark:border-gray-800">
             <h3 style="font-size: 16px; font-weight: 800; color: #10B981; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-user-gear"></i> BPSC Candidate Setup
+                <i class="fa-solid fa-user-gear"></i> Candidate & Preference Setup
             </h3>
 
             <div>
                 <label style="display: block; font-size: 12px; font-weight: 700; color: #4B5563; margin-bottom: 3px;" class="dark:text-gray-300">Exam Category</label>
-                <select wire:model="examType" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" :disabled="isSessionActive">
+                <select wire:model.live="examType" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" :disabled="isSessionActive">
                     <option value="BCS">BCS (Civil Service)</option>
-                    <option value="Bank">Bank AD / Senior Officer</option>
+                    <option value="Bank">Bank AD / Officer</option>
                     <option value="Primary">Primary Assistant Teacher</option>
+                    <option value="Other">Other Govt Position</option>
                 </select>
             </div>
 
-            <!-- Choices 1 to 7 Inputs -->
+            <!-- Dynamic Preference Labels & Inputs based on Exam Category -->
             <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 11px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: 0.03em;">
+                    @if($examType === 'BCS')
+                        <i class="fa-solid fa-gavel text-emerald-600"></i> Cadre Preference List (1st to 7th Choices)
+                    @elseif($examType === 'Bank')
+                        <i class="fa-solid fa-building-columns text-blue-600"></i> Bank Designation Preference List
+                    @elseif($examType === 'Primary')
+                        <i class="fa-solid fa-school text-indigo-600"></i> School & Upazila Posting Preferences
+                    @else
+                        <i class="fa-solid fa-briefcase text-gray-600"></i> Post & Department Preferences
+                    @endif
+                </div>
+
                 <div>
                     <label style="display: block; font-size: 11px; font-weight: 700; color: #10B981;" class="dark:text-emerald-400">1st Preference Choice</label>
-                    <input type="text" wire:model="choice1" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="e.g. BCS Administration Cadre" :disabled="isSessionActive" />
+                    <input type="text" wire:model="choice1" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="{{ $examType === 'BCS' ? 'e.g. BCS Administration Cadre' : ($examType === 'Bank' ? 'e.g. Assistant Director (AD) - Bangladesh Bank' : ($examType === 'Primary' ? 'e.g. Barisal Sadar Primary School' : 'e.g. Assistant Director - ACC')) }}" :disabled="isSessionActive" />
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 11px; font-weight: 700; color: #3B82F6;" class="dark:text-blue-400">2nd Preference Choice</label>
-                    <input type="text" wire:model="choice2" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="e.g. BCS Foreign Affairs Cadre" :disabled="isSessionActive" />
+                    <input type="text" wire:model="choice2" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="{{ $examType === 'BCS' ? 'e.g. BCS Foreign Affairs Cadre' : ($examType === 'Bank' ? 'e.g. Senior Officer - Sonali Bank' : ($examType === 'Primary' ? 'e.g. Bakerganj Primary School' : 'e.g. Field Officer - NSI')) }}" :disabled="isSessionActive" />
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 11px; font-weight: 700; color: #6B7280;" class="dark:text-gray-400">3rd Choice</label>
-                    <input type="text" wire:model="choice3" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="e.g. BCS Police Cadre" :disabled="isSessionActive" />
+                    <input type="text" wire:model="choice3" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 12px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="{{ $examType === 'BCS' ? 'e.g. BCS Police Cadre' : ($examType === 'Bank' ? 'e.g. Senior Officer - Agrani Bank' : '3rd Choice') }}" :disabled="isSessionActive" />
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                     <div>
                         <label style="display: block; font-size: 10px; font-weight: 700; color: #6B7280;">4th Choice</label>
-                        <input type="text" wire:model="choice4" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Audit & Accounts" :disabled="isSessionActive" />
+                        <input type="text" wire:model="choice4" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="{{ $examType === 'BCS' ? 'Audit & Accounts' : '4th Choice' }}" :disabled="isSessionActive" />
                     </div>
                     <div>
                         <label style="display: block; font-size: 10px; font-weight: 700; color: #6B7280;">5th Choice</label>
-                        <input type="text" wire:model="choice5" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Taxation Cadre" :disabled="isSessionActive" />
+                        <input type="text" wire:model="choice5" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="{{ $examType === 'BCS' ? 'Taxation Cadre' : '5th Choice' }}" :disabled="isSessionActive" />
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                     <div>
                         <label style="display: block; font-size: 10px; font-weight: 700; color: #6B7280;">6th Choice</label>
-                        <input type="text" wire:model="choice6" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Customs Cadre" :disabled="isSessionActive" />
+                        <input type="text" wire:model="choice6" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="{{ $examType === 'BCS' ? 'Customs Cadre' : '6th Choice' }}" :disabled="isSessionActive" />
                     </div>
                     <div>
                         <label style="display: block; font-size: 10px; font-weight: 700; color: #6B7280;">7th Choice</label>
-                        <input type="text" wire:model="choice7" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Ansar Cadre" :disabled="isSessionActive" />
+                        <input type="text" wire:model="choice7" style="width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="{{ $examType === 'BCS' ? 'Ansar Cadre' : '7th Choice' }}" :disabled="isSessionActive" />
                     </div>
                 </div>
             </div>
 
             <div>
-                <label style="display: block; font-size: 11px; font-weight: 700; color: #4B5563; margin-bottom: 3px;" class="dark:text-gray-300">Candidate CV / Context</label>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #4B5563; margin-bottom: 3px;" class="dark:text-gray-300">Candidate CV / Background</label>
                 <textarea wire:model="candidateCv" rows="3" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #D1D5DB; background: #F9FAFB; color: #111827; font-size: 11px;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="Subject, University, Home District..." :disabled="isSessionActive"></textarea>
             </div>
 
@@ -212,7 +225,7 @@
                 <div class="final-score-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 16px;">
                         <div>
-                            <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85;">Final Board Cadre Verdict</span>
+                            <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85;">Final Board {{ $examType }} Verdict</span>
                             <h2 style="font-size: 24px; font-weight: 800; margin-top: 2px;">{{ $finalEvaluation['verdict'] ?? 'Recommended' }}</h2>
                         </div>
 
@@ -226,7 +239,7 @@
                     @if(!empty($finalEvaluation['cadre_suitability_ratings']))
                         <div style="margin-bottom: 20px;">
                             <h4 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; margin-bottom: 8px;">
-                                <i class="fa-solid fa-list-ol"></i> Cadre Preference Suitability Ranking:
+                                <i class="fa-solid fa-list-ol"></i> Preference Suitability Ranking:
                             </h4>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
                                 @if(is_array($finalEvaluation['cadre_suitability_ratings']))
@@ -279,7 +292,7 @@
                     @if(!empty($finalEvaluation['board_feedback']))
                         <div style="margin-bottom: 16px;">
                             <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; margin-bottom: 4px;">
-                                <i class="fa-solid fa-user-tie"></i> Chairman Board Cadre Recommendation Analysis:
+                                <i class="fa-solid fa-user-tie"></i> Chairman Board Placement Recommendation Analysis:
                             </h4>
                             <p style="font-size: 14px; opacity: 0.95; line-height: 1.6;">
                                 {{ $finalEvaluation['board_feedback'] }}
@@ -434,7 +447,7 @@
                     <i class="fa-solid fa-comments" style="font-size: 48px; color: #E5E7EB; margin-bottom: 16px;"></i>
                     <h3 style="font-size: 18px; font-weight: 700; color: #1F2937;" class="dark:text-white">AI Viva Simulator Idle</h3>
                     <p style="font-size: 14px; margin-top: 4px; max-width: 420px; margin-left: auto; margin-right: auto;">
-                        Set up the candidate's cadre preferences (Choices 1 to 7) on the left sidebar to start a realistic 10–20 minute board interview (8 to 20 questions).
+                        Set up the candidate's preferences (1st to 7th choices) on the left sidebar to start a realistic 10–20 minute board interview (8 to 20 questions).
                     </p>
                 </div>
             @endif

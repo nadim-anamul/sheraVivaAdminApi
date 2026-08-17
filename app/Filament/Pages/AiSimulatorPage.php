@@ -62,6 +62,78 @@ class AiSimulatorPage extends Page
 
     public array $expectedKeyPoints = [];
 
+    public function mount(): void
+    {
+        $this->setDefaultChoicesForCategory($this->examType);
+    }
+
+    public function updatedExamType($val): void
+    {
+        $this->setDefaultChoicesForCategory($val);
+    }
+
+    public function setDefaultChoicesForCategory(string $category): void
+    {
+        match (strtoupper($category)) {
+            'BANK' => $this->setBankDefaults(),
+            'PRIMARY' => $this->setPrimaryDefaults(),
+            'OTHER' => $this->setOtherDefaults(),
+            default => $this->setBcsDefaults(),
+        };
+    }
+
+    protected function setBcsDefaults(): void
+    {
+        $this->position = 'BCS Administration Cadre';
+        $this->choice1 = 'BCS Administration Cadre';
+        $this->choice2 = 'BCS Foreign Affairs Cadre';
+        $this->choice3 = 'BCS Police Cadre';
+        $this->choice4 = 'BCS Audit & Accounts Cadre';
+        $this->choice5 = 'BCS Taxation Cadre';
+        $this->choice6 = 'BCS Customs & Excise Cadre';
+        $this->choice7 = 'BCS Ansar & VDP Cadre';
+        $this->candidateCv = 'Subject: Political Science, University: Dhaka University. Home District: Barisal. Target: BCS Admin/Foreign/Police.';
+    }
+
+    protected function setBankDefaults(): void
+    {
+        $this->position = 'Assistant Director (AD) - Bangladesh Bank';
+        $this->choice1 = 'Assistant Director (AD) - Bangladesh Bank';
+        $this->choice2 = 'Senior Officer - Sonali Bank PLC';
+        $this->choice3 = 'Senior Officer - Agrani Bank PLC';
+        $this->choice4 = 'Officer - Janata Bank PLC';
+        $this->choice5 = 'Senior Officer - Rupali Bank PLC';
+        $this->choice6 = 'Officer - Bangladesh Krishi Bank';
+        $this->choice7 = 'Officer - BASIC Bank Limited';
+        $this->candidateCv = 'Subject: Accounting / Finance & Banking, University: Dhaka University. Home District: Barisal. Target: BB AD & State Banks.';
+    }
+
+    protected function setPrimaryDefaults(): void
+    {
+        $this->position = 'Primary Assistant Teacher (Barisal Sadar)';
+        $this->choice1 = 'Barisal Sadar Upazila Primary School';
+        $this->choice2 = 'Bakerganj Upazila Primary School';
+        $this->choice3 = 'Babuganj Upazila Primary School';
+        $this->choice4 = 'Wazirpur Upazila Primary School';
+        $this->choice5 = 'Gournadi Upazila Primary School';
+        $this->choice6 = 'Muladi Upazila Primary School';
+        $this->choice7 = 'Mehendiganj Upazila Primary School';
+        $this->candidateCv = 'Subject: B.Ed / General Honors, University: Barisal University. Home District: Barisal. Target: Primary Teacher.';
+    }
+
+    protected function setOtherDefaults(): void
+    {
+        $this->position = 'Assistant Director - Anti-Corruption Commission (ACC)';
+        $this->choice1 = 'Assistant Director - ACC';
+        $this->choice2 = 'Field Officer - National Security Intelligence (NSI)';
+        $this->choice3 = 'Sub-Inspector - Bangladesh Police';
+        $this->choice4 = 'Auditor - Comptroller & Auditor General (CAG)';
+        $this->choice5 = 'Customs Inspector - National Board of Revenue (NBR)';
+        $this->choice6 = 'Assistant Superintendent - Jail';
+        $this->choice7 = 'Assistant Postmaster - Postal Department';
+        $this->candidateCv = 'Subject: Law / Criminology, University: Dhaka University. Home District: Barisal. Target: ACC / NSI AD.';
+    }
+
     /**
      * Get candidate dynamic cadre preferences list.
      */

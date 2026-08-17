@@ -168,12 +168,21 @@ PROMPT;
             $historyText .= "{$speaker}: {$text}\n";
         }
 
-        // Format cadre choice context string
+        $prefLabel = match (strtoupper($examType)) {
+            'BCS' => 'Cadre Choice Preference',
+            'BANK' => 'Bank & Designation Preference (e.g. Bangladesh Bank AD vs Sonali/Janata Senior Officer)',
+            'PRIMARY' => 'School & Upazila Posting Preference',
+            default => 'Department & Job Preference',
+        };
+
+        // Format preference choice context string
         $choicesContext = '';
         if (!empty($cadreChoices)) {
-            $choicesContext = "CANDIDATE CADRE PREFERENCES:\n";
-            foreach ($cadreChoices as $rank => $cadreName) {
-                $choicesContext .= "  - {$rank}: {$cadreName}\n";
+            $choicesContext = "CANDIDATE {$prefLabel} LIST:\n";
+            foreach ($cadreChoices as $rk => $cName) {
+                if (!empty(trim($cName))) {
+                    $choicesContext .= "  - {$rk}: {$cName}\n";
+                }
             }
         }
 
@@ -212,26 +221,26 @@ PROMPT;
             $conclusionGuidance = <<<GUIDANCE
 CRITICAL ADAPTIVE BOARD INTERROGATION INSTRUCTION (Question #{$currentQuestionCount} of 20 - Minimum 8 required):
 1. You have passed the mandatory 8-question baseline assessment.
-2. Evaluate if the candidate has demonstrated clear, unambiguous suitability for their 1ST CADRE CHOICE vs 2ND CADRE CHOICE vs Non-Cadre placement.
+2. Evaluate if the candidate has demonstrated clear, unambiguous suitability for their 1ST {$prefLabel} vs 2ND {$prefLabel}.
 3. If clear consensus is reached OR if the candidate shows irrecoverable failure, conclude the session now. Set "is_concluded": true and provide a polite closing statement as the question string (e.g. "Thank you candidate. The board has concluded your viva session.").
-4. If the candidate is strong and you need to probe deeper into their 1st or 2nd cadre choice capabilities under pressure (simulating a 15-20 minute rigorous BPSC board), set "is_concluded": false and ask the next probing question.
+4. If the candidate is strong and you need to probe deeper into their 1st or 2nd preference capabilities under pressure (simulating a 15-20 minute rigorous board), set "is_concluded": false and ask the next probing question.
 GUIDANCE;
         } else {
             $conclusionGuidance = "This is Question #{$currentQuestionCount} of 20 (Minimum 8 questions required before conclusion). Set 'is_concluded': false and generate the next board question.";
         }
 
         $prompt = <<<PROMPT
-You are the Honorable Chairman of a Bangladeshi BPSC / Bank Viva Board for '{$categoryTitle}'.
+You are the Honorable Chairman of a Bangladeshi Viva Board for '{$categoryTitle}' ({$examType} Selection).
 Target Position: {$position}
 Exam Type: {$examType}
 Candidate Profile/CV: {$candidateCv}
 {$choicesContext}
 
-Your goal is to conduct an authentic 10-20 minute BPSC / Bank board viva session (asking 8 to 20 questions adaptively). 
+Your goal is to conduct an authentic 10-20 minute viva session (asking 8 to 20 questions adaptively). 
 - Questions 1-3: Candidate background, district history & academic major.
-- Questions 4-7: Laws, Constitution of Bangladesh, Liberations War 1971, National & International Current Affairs.
-- Questions 8-14: Situational & legal crisis interrogation testing fit for 1ST CADRE CHOICE.
-- Questions 15-20: Advanced pressure testing & 2ND CADRE CHOICE matching for top candidates.
+- Questions 4-7: Category domain rules, Constitution of Bangladesh / Banking Regulations / Pedagogy, Liberations War 1971, Current Affairs.
+- Questions 8-14: Situational & domain interrogation testing fit for 1ST {$prefLabel}.
+- Questions 15-20: Advanced pressure testing & 2ND {$prefLabel} matching for top candidates.
 
 {$realExamplesContext}
 
@@ -246,7 +255,7 @@ Generate the NEXT viva step and return a JSON object:
   "speaker": "Chairman" or "Board Member 1" or "Board Member 2",
   "question": "The question string or board closing statement",
   "is_concluded": false,
-  "context_hint": "Why this question is asked for Cadre matching",
+  "context_hint": "Why this question is asked for {$prefLabel} matching",
   "expected_key_points": ["Key concept 1", "Key concept 2"]
 }
 PROMPT;

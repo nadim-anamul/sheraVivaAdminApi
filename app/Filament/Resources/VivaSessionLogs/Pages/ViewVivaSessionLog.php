@@ -9,5 +9,5 @@ class ViewVivaSessionLog extends ViewRecord
 {
     protected static string $resource = VivaSessionLogResource::class;
 
-    protected static string $view = 'filament.resources.viva-session-logs.view-viva-session-log';
+    protected string $view = 'filament.resources.viva-session-logs.view-viva-session-log';
 }
