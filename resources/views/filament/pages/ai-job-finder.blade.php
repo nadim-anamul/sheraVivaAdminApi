@@ -1,4 +1,6 @@
 <x-filament-panels::page>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <style>
         .search-container {
             background: #ffffff;
@@ -11,6 +13,49 @@
         .dark .search-container {
             background: #111827;
             border-color: #1F2937;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-b: 1px solid #F3F4F6;
+        }
+        .dark .category-tabs {
+            border-color: #1F2937;
+        }
+
+        .cat-tab {
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #E5E7EB;
+            background: #F9FAFB;
+            color: #4B5563;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dark .cat-tab {
+            background: #1F2937;
+            border-color: #374151;
+            color: #D1D5DB;
+        }
+        .cat-tab:hover {
+            border-color: #F59E0B;
+            color: #D97706;
+        }
+        .cat-tab.active {
+            background: #F59E0B;
+            border-color: #D97706;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
         }
 
         .search-row {
@@ -294,22 +339,52 @@
         </div>
     @endif
 
-    <!-- Search & Control Panel -->
+    <!-- Search & Sector Filter Panel -->
     <div class="search-container">
+        
+        <!-- Category Filter Tabs -->
+        <div class="category-tabs">
+            <button wire:click="selectCategory('all')" class="cat-tab {{ $selectedCategory === 'all' ? 'active' : '' }}">
+                <i class="fa-solid fa-globe"></i> All Job Circulars
+            </button>
+            <button wire:click="selectCategory('bcs')" class="cat-tab {{ $selectedCategory === 'bcs' ? 'active' : '' }}">
+                <i class="fa-solid fa-gavel"></i> BPSC & BCS
+            </button>
+            <button wire:click="selectCategory('bank')" class="cat-tab {{ $selectedCategory === 'bank' ? 'active' : '' }}">
+                <i class="fa-solid fa-building-columns"></i> Bangladesh Bank & Govt Banks
+            </button>
+            <button wire:click="selectCategory('pvt_bank')" class="cat-tab {{ $selectedCategory === 'pvt_bank' ? 'active' : '' }}">
+                <i class="fa-solid fa-credit-card"></i> Private Banks (MTO/PO)
+            </button>
+            <button wire:click="selectCategory('corporate')" class="cat-tab {{ $selectedCategory === 'corporate' ? 'active' : '' }}">
+                <i class="fa-solid fa-building"></i> Big Corporate & MNCs
+            </button>
+            <button wire:click="selectCategory('primary')" class="cat-tab {{ $selectedCategory === 'primary' ? 'active' : '' }}">
+                <i class="fa-solid fa-school"></i> Primary Assistant Teacher
+            </button>
+            <button wire:click="selectCategory('defence')" class="cat-tab {{ $selectedCategory === 'defence' ? 'active' : '' }}">
+                <i class="fa-solid fa-shield-halved"></i> Defence, Police & NSI
+            </button>
+            <button wire:click="selectCategory('ministry')" class="cat-tab {{ $selectedCategory === 'ministry' ? 'active' : '' }}">
+                <i class="fa-solid fa-landmark"></i> Ministries & ACC
+            </button>
+        </div>
+
+        <!-- Live Search Row -->
         <div class="search-row">
             <input 
                 type="text" 
                 wire:model="searchQuery" 
                 class="search-input" 
-                placeholder="Enter search keywords (e.g. BPSC circular, Bangladesh Bank circular, ৪৬তম বিসিএস)"
+                placeholder="Type specific job title or leave blank to auto-discover all active circulars..."
                 wire:keydown.enter="searchJobs"
             >
             <button wire:click="searchJobs" class="search-btn" wire:loading.attr="disabled" wire:target="searchJobs">
                 <span wire:loading.remove wire:target="searchJobs">
-                    <i class="fa-solid fa-magnifying-glass"></i> Search & Discover Jobs
+                    <i class="fa-solid fa-magnifying-glass"></i> Deep Scan Portals
                 </span>
                 <span wire:loading wire:target="searchJobs">
-                    <i class="fa-solid fa-spinner animate-spin"></i> Grounding Google Search...
+                    <i class="fa-solid fa-spinner animate-spin"></i> Scanning BD Portals...
                 </span>
             </button>
         </div>
@@ -330,8 +405,10 @@
     @if(count($discoveredJobs) > 0 && !$isSearching)
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 16px; border-radius: 12px;">
             <div>
-                <h4 style="font-size: 15px; font-weight: 800; color: #047857;" class="dark:text-emerald-400">Discovered Listings Ready</h4>
-                <p style="font-size: 13px; color: #6B7280;" class="dark:text-gray-400">Modify any fields directly in the cards below before importing them into your database.</p>
+                <h4 style="font-size: 15px; font-weight: 800; color: #047857;" class="dark:text-emerald-400">
+                    Discovered {{ count($discoveredJobs) }} Official Bangladesh Govt Circulars
+                </h4>
+                <p style="font-size: 13px; color: #6B7280;" class="dark:text-gray-400">Review or edit details below, then import them directly to Job Updates & Candidate Library.</p>
             </div>
             <button 
                 wire:click="importAll" 
@@ -339,7 +416,7 @@
                 style="background: #047857;"
                 @if(count($importedIndices) === count($discoveredJobs)) disabled @endif
             >
-                <i class="fa-solid fa-cloud-arrow-down"></i> Import All Notices (Bulk)
+                <i class="fa-solid fa-cloud-arrow-down"></i> Import All Discovered Circulars
             </button>
         </div>
     @endif
@@ -347,10 +424,10 @@
     <!-- Main Results Interface -->
     @if($isSearching)
         <div class="jobs-grid">
-            @for($i = 0; $i < 3; $i++)
+            @for($i = 0; $i < 6; $i++)
                 <div class="skeleton-card">
                     <i class="fa-solid fa-circle-notch animate-spin" style="font-size: 32px; color: #F59E0B; margin-bottom: 12px;"></i>
-                    <p style="font-size: 14px; color: #6B7280; font-weight: 600;">Searching news sources...</p>
+                    <p style="font-size: 14px; color: #6B7280; font-weight: 600;">Scanning bpsc.gov.bd, erecruitment.bb.org.bd, dpe.gov.bd...</p>
                 </div>
             @endfor
         </div>
@@ -489,7 +566,7 @@
                     <div class="card-actions">
                         @if(!empty($job['file_url']))
                             <a href="{{ $job['file_url'] }}" target="_blank" class="preview-link">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Source PDF
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Official PDF
                             </a>
                         @else
                             <span></span>
@@ -503,7 +580,7 @@
                             @if($isImported)
                                 <i class="fa-solid fa-check"></i> Saved
                             @else
-                                <i class="fa-solid fa-floppy-disk"></i> Save & Entry
+                                <i class="fa-solid fa-floppy-disk"></i> Save & Import
                             @endif
                         </button>
                     </div>
@@ -513,10 +590,10 @@
     @else
         <!-- Welcome / Empty State -->
         <div class="empty-state">
-            <i class="fa-solid fa-sparkles" style="font-size: 56px; color: #F59E0B; margin-bottom: 16px; opacity: 0.8;"></i>
-            <h3 style="font-size: 18px; font-weight: 800; color: #1F2937;" class="dark:text-white">AI Govt Job Discovery Agent</h3>
-            <p style="font-size: 14px; margin-top: 8px; max-width: 460px; margin-left: auto; margin-right: auto; line-height: 1.5;">
-                Enter a custom search query above (e.g. <i>"৪৪তম বিসিএস"</i> or <i>"Bangladesh Bank Senior Officer circular"</i>) and watch Gemini 3.6 search Google live to discover the latest published notifications.
+            <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 56px; color: #F59E0B; margin-bottom: 16px; opacity: 0.8;"></i>
+            <h3 style="font-size: 18px; font-weight: 800; color: #1F2937;" class="dark:text-white">AI Bangladesh Govt Job Discovery Engine</h3>
+            <p style="font-size: 14px; margin-top: 8px; max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                Click any sector tab above (<strong>BPSC & BCS</strong>, <strong>Bangladesh Bank</strong>, <strong>Primary Teacher</strong>, <strong>Defence/NSI</strong>, or <strong>Ministries</strong>) or click <strong>Deep Scan Portals</strong> to discover live government job circulars published across Bangladesh.
             </p>
         </div>
     @endif

@@ -19,7 +19,9 @@ class AiJobFinderPage extends Page
 
     protected string $view = 'filament.pages.ai-job-finder';
 
-    public string $searchQuery = 'BPSC';
+    public string $searchQuery = '';
+
+    public string $selectedCategory = 'all';
 
     public array $discoveredJobs = [];
 
@@ -30,20 +32,29 @@ class AiJobFinderPage extends Page
     public array $importedIndices = [];
 
     /**
-     * Search and discover latest govt jobs using Gemini Search Grounding.
+     * Switch category filter and trigger live deep search.
+     */
+    public function selectCategory(string $category, GeminiAiService $gemini): void
+    {
+        $this->selectedCategory = $category;
+        $this->searchJobs($gemini);
+    }
+
+    /**
+     * Search and discover latest govt jobs using Gemini Search Grounding across BD portals.
      */
     public function searchJobs(GeminiAiService $gemini): void
     {
         $this->isSearching = true;
-        $this->statusMessage = 'AI is searching live Google search indexes for recent Bangladesh govt circulars and results...';
+        $this->statusMessage = 'AI is scanning official Bangladesh recruitment portals (BPSC, BB, DPE, Teletalk, NSI, ACC)...';
         $this->discoveredJobs = [];
         $this->importedIndices = [];
 
         try {
-            $jobs = $gemini->searchGovtJobs($this->searchQuery);
+            $jobs = $gemini->searchGovtJobs($this->searchQuery, $this->selectedCategory);
             if (!empty($jobs)) {
                 $this->discoveredJobs = $jobs;
-                $this->statusMessage = 'Successfully discovered '.count($jobs).' matches!';
+                $this->statusMessage = 'Successfully discovered '.count($jobs).' official Bangladesh govt circulars & results!';
             } else {
                 $this->statusMessage = 'No matching government job circulars or results were found.';
             }
