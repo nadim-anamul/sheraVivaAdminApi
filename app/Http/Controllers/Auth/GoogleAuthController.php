@@ -17,7 +17,18 @@ class GoogleAuthController extends Controller
      */
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        $clientId = config('services.google.client_id');
+        $clientSecret = config('services.google.client_secret');
+
+        if (empty($clientId) || empty($clientSecret)) {
+            return redirect()->route('login')->with('error', 'Google OAuth credentials (GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET) are missing in server .env file.');
+        }
+
+        try {
+            return Socialite::driver('google')->redirect();
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'Google Login error: '.$e->getMessage());
+        }
     }
 
     /**
