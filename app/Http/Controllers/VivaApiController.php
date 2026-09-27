@@ -14,6 +14,8 @@ use App\Models\Slot;
 use App\Models\VivaAdvice;
 use App\Models\VivaCategory;
 use App\Models\VivaRule;
+use App\Models\PaymentTransaction;
+use App\Models\VivaPackage;
 use App\Services\GeminiAiService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -39,6 +41,17 @@ class VivaApiController extends Controller
      */
     public function saveSession(Request $request, GeminiAiService $gemini): JsonResponse
     {
+        $user = $request->user();
+        if ($user && $user->role !== 'admin') {
+            if ($user->ai_viva_credits <= 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'পর্যাপ্ত ক্রেডিট নেই! নতুন সেশন শুরু করতে দয়া করে প্যাকেজ স্টোর থেকে রিচার্জ করুন।',
+                ], 402);
+            }
+            $user->decrement('ai_viva_credits');
+        }
+
         $validated = $request->validate([
             'viva_category_id' => 'required|exists:viva_categories,id',
             'transcript' => 'required|array',
@@ -608,5 +621,36 @@ class VivaApiController extends Controller
             'status' => 'success',
             'data' => $evaluation,
         ], 200);
+    }
+
+    /**
+     * Submit manual top-up / package bkash payment from candidate app.
+     */
+    public function submitPayment(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'package_id' => 'required|exists:viva_packages,id',
+            'bkash_number' => 'required|string|min:11|max:14',
+            'trx_id' => 'required|string|min:6|max:20|unique:payment_transactions,trx_id',
+        ]);
+
+        $package = VivaPackage::findOrFail($validated['package_id']);
+
+        $trx = PaymentTransaction::create([
+            'user_id' => $request->user()->id,
+            'package_id' => $package->id,
+            'type' => $package->type === 'live_human' ? 'live_viva' : 'ai_package',
+            'amount_bdt' => $package->price_bdt,
+            'payment_method' => 'bKash Send Money',
+            'bkash_number' => $validated['bkash_number'],
+            'trx_id' => strtoupper(trim($validated['trx_id'])),
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "bKash Payment submitted for {$package->name}! Admin will verify TrxID: ".strtoupper(trim($validated['trx_id']))." and activate your credits shortly.",
+            'data' => $trx,
+        ], 201);
     }
 }

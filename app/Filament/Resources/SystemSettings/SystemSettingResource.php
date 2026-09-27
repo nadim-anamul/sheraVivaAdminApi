@@ -22,7 +22,7 @@ class SystemSettingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Monetization & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'System Management';
 
     protected static ?string $navigationLabel = 'System Settings & Free Quotas';
 

@@ -57,6 +57,7 @@ Route::middleware('api.key')->group(function () {
         Route::get('/viva/sessions/{id}/evaluation', [VivaApiController::class, 'getEvaluation']);
         Route::post('/viva/get-token', [VivaApiController::class, 'getLiveKitToken']);
         Route::post('/viva/bookings', [VivaApiController::class, 'createBooking']);
+        Route::post('/viva/payments', [VivaApiController::class, 'submitPayment']);
         Route::get('/dashboard/stats', [VivaApiController::class, 'getDashboardStats']);
     });
 

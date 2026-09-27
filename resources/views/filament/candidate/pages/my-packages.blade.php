@@ -69,9 +69,15 @@
                         </div>
 
                         <div class="mt-6 pt-4 border-t border-white/10">
-                            <button onclick="document.getElementById('payment-form-section').scrollIntoView({ behavior: 'smooth' })" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-cart-shopping"></i> Pay via bKash
-                            </button>
+                            @if($pkg->type === 'live_human')
+                                <a href="{{ route('filament.candidate.pages.my-live-vivas-page') }}" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-user-check"></i> Select Examiner & Slot
+                                </a>
+                            @else
+                                <button onclick="document.getElementById('payment-form-section').scrollIntoView({ behavior: 'smooth' })" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-cart-shopping"></i> Pay via bKash
+                                </button>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -165,7 +171,7 @@
                         <tbody class="divide-y divide-white/5">
                             @foreach($transactions as $trx)
                                 <tr class="hover:bg-white/5 transition">
-                                    <td class="py-3.5 px-4 font-bold text-white">{{ $trx->package?->name ?? 'N/A' }}</td>
+                                    <td class="py-3.5 px-4 font-bold text-white">{{ $trx->package?->name ?? ($trx->type === 'live_viva' ? 'Human Expert Live Board Viva' : 'N/A') }}</td>
                                     <td class="py-3.5 px-4 font-extrabold text-emerald-400">৳{{ number_format($trx->amount_bdt, 0) }}</td>
                                     <td class="py-3.5 px-4 font-mono text-gray-300">{{ $trx->bkash_number }}</td>
                                     <td class="py-3.5 px-4 font-mono font-bold text-indigo-300">{{ $trx->trx_id }}</td>

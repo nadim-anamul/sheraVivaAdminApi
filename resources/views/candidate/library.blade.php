@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Question Bank & Experience Library | Shera Viva')
+@section('title', 'প্রশ্ন ও স্টাডি লাইব্রেরি | সেরা ভাইভা')
 
 @section('content')
 <div class="max-w-[1200px] mx-auto px-6 py-10 w-full">
 <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
     <div>
-        <h1 class="font-display text-2xl lg:text-3xl font-extrabold text-white mb-2">Question Bank & Board Experience Library</h1>
-        <p class="text-text-muted text-sm">Browse 120+ authentic Bangladesh job viva board transcripts, cadre choices, and board Q&A.</p>
+        <h1 class="font-display text-2xl lg:text-3xl font-extrabold text-white mb-2">প্রশ্ন ও স্টাডি লাইব্রেরি (Question Bank & Experience Library)</h1>
+        <p class="text-text-muted text-sm">১২০+ আসল ভাইভা বোর্ডের অভিজ্ঞতা, প্রশ্ন ও উত্তরের সংগ্রহ পড়ুন।</p>
     </div>
     <div>
-        <a href="/dashboard/ai-simulator" class="btn-primary">
-            <i class="fa-solid fa-play"></i> Practice AI Viva
+        <a href="/viva/practice" class="btn-primary no-underline">
+            <i class="fa-solid fa-play mr-1.5"></i> এআই মক ভাইভা
         </a>
     </div>
 </div>
@@ -21,16 +21,16 @@
     <!-- Filter Tabs -->
     <div class="flex gap-2 border-b sm:border-b-0 border-white/5 pb-2 sm:pb-0 overflow-x-auto w-full sm:w-auto">
         <a href="/library?exam_type=BCS" class="text-xs font-bold py-2 px-3.5 rounded-lg transition-all no-underline shrink-0 {{ $examType === 'BCS' ? 'bg-primary-emerald text-white' : 'text-text-muted hover:bg-white/5 hover:text-white' }}">
-            BCS Board Bank
+            বিসিএস প্রশ্নব্যাংক
         </a>
         <a href="/library?exam_type=Bank" class="text-xs font-bold py-2 px-3.5 rounded-lg transition-all no-underline shrink-0 {{ $examType === 'Bank' ? 'bg-primary-emerald text-white' : 'text-text-muted hover:bg-white/5 hover:text-white' }}">
-            Bank AD Bank
+            ব্যাংক এডির প্রশ্নব্যাংক
         </a>
         <a href="/library?exam_type=Primary" class="text-xs font-bold py-2 px-3.5 rounded-lg transition-all no-underline shrink-0 {{ $examType === 'Primary' ? 'bg-primary-emerald text-white' : 'text-text-muted hover:bg-white/5 hover:text-white' }}">
-            Primary Teacher Bank
+            প্রাথমিক শিক্ষক প্রশ্নব্যাংক
         </a>
         <a href="/library?exam_type=All" class="text-xs font-bold py-2 px-3.5 rounded-lg transition-all no-underline shrink-0 {{ $examType === 'All' ? 'bg-primary-emerald text-white' : 'text-text-muted hover:bg-white/5 hover:text-white' }}">
-            All Question Banks
+            সব প্রশ্নব্যাংক
         </a>
     </div>
 
@@ -38,7 +38,7 @@
     <form action="/library" method="GET" class="w-full sm:w-72 flex items-center gap-2 bg-black/20 border border-white/10 rounded-xl px-3 py-1.5">
         <input type="hidden" name="exam_type" value="{{ $examType }}">
         <i class="fa-solid fa-magnifying-glass text-text-muted text-xs"></i>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by subject, board..." class="w-full bg-transparent border-none text-xs text-white outline-none">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="বিষয় বা বোর্ডের নাম দিয়ে খুঁজুন..." class="w-full bg-transparent border-none text-xs text-white outline-none">
         <button type="submit" class="hidden"></button>
     </form>
 </div>
@@ -77,13 +77,13 @@
 
             <div class="pt-3 border-t border-white/5">
                 <a href="/library/{{ $item->id }}" class="w-full bg-white/5 hover:bg-white/10 text-emerald-400 border border-white/10 font-bold text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-2 no-underline">
-                    <i class="fa-solid fa-eye"></i> Read Full Transcript & Q&A &rarr;
+                    <i class="fa-solid fa-eye"></i> পূর্ণাঙ্গ প্রশ্ন ও উত্তর পড়ুন &rarr;
                 </a>
             </div>
         </div>
     @empty
         <div class="col-span-full text-center text-text-muted py-12 bg-bg-card border border-dashed border-border-glow rounded-2xl">
-            No viva experiences found matching your filter criteria.
+            কোনো ভাইভা অভিজ্ঞতা পাওয়া যায়নি।
         </div>
     @endforelse
 </div>

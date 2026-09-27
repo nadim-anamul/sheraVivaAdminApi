@@ -20,7 +20,7 @@ class PaymentTransactionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Monetization & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance & Monetization';
 
     protected static ?string $navigationLabel = 'bKash Payments & Approvals';
 
@@ -40,7 +40,7 @@ class PaymentTransactionResource extends Resource
 
                 TextColumn::make('package.name')
                     ->label('Package Purchased')
-                    ->default('N/A'),
+                    ->default(fn (PaymentTransaction $record): string => $record->type === 'live_viva' ? 'Human Expert Live Board Viva' : 'N/A'),
 
                 TextColumn::make('amount_bdt')
                     ->label('Amount (BDT)')
@@ -95,10 +95,16 @@ class PaymentTransactionResource extends Resource
                             'approved_at' => now(),
                         ]);
 
+                        if ($record->liveVivaBooking) {
+                            $record->liveVivaBooking->update([
+                                'status' => 'scheduled',
+                            ]);
+                        }
+
                         Notification::make()
                             ->success()
                             ->title('Payment Approved')
-                            ->body("Approved TrxID {$record->trx_id} and granted {$package?->credits} credits to {$user?->name}!")
+                            ->body("Approved TrxID {$record->trx_id} and activated Live Viva session for {$user?->name}!")
                             ->send();
                     }),
 

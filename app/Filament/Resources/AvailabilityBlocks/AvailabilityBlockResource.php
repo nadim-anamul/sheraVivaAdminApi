@@ -13,12 +13,17 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class AvailabilityBlockResource extends Resource
 {
     protected static ?string $model = AvailabilityBlock::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
+
+    protected static UnitEnum|string|null $navigationGroup = 'Human Board Viva';
+
+    protected static ?string $navigationLabel = 'Examiner Availability Blocks';
 
     public static function form(Schema $schema): Schema
     {

@@ -9,6 +9,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class VivaSessionLogResource extends Resource
 {
@@ -16,7 +17,9 @@ class VivaSessionLogResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
 
-    protected static ?string $navigationLabel = 'Viva Sessions & Results';
+    protected static string|UnitEnum|null $navigationGroup = 'AI Viva Engine';
+
+    protected static ?string $navigationLabel = 'AI Viva Transcripts & Scores';
 
     protected static ?string $modelLabel = 'Viva Session Log';
 

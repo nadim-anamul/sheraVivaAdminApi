@@ -13,12 +13,17 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class VivaRuleResource extends Resource
 {
     protected static ?string $model = VivaRule::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Content & Study Library';
+
+    protected static ?string $navigationLabel = 'Viva Rules (Do & Don\'t)';
 
     protected static ?string $recordTitleAttribute = 'title';
 

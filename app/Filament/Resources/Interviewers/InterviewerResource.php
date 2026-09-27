@@ -13,12 +13,17 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class InterviewerResource extends Resource
 {
     protected static ?string $model = Interviewer::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Human Board Viva';
+
+    protected static ?string $navigationLabel = 'Board Panel Experts';
 
     protected static ?string $recordTitleAttribute = 'name';
 

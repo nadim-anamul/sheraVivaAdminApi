@@ -26,7 +26,7 @@ class VivaPackageResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Monetization & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'Finance & Monetization';
 
     protected static ?string $navigationLabel = 'AI & Live Viva Packages';
 

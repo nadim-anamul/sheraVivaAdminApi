@@ -103,9 +103,15 @@
                         </div>
 
                         <div class="mt-6 pt-4 border-t border-gray-100">
-                            <button onclick="selectPackage('{{ $pkg->id }}', '{{ $pkg->name }}', '{{ $pkg->price_bdt }}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-cart-shopping"></i> Pay via bKash
-                            </button>
+                            @if($pkg->type === 'live_human')
+                                <a href="{{ route('candidate.live_vivas') }}" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="fa-solid fa-user-check"></i> Select Examiner & Slot
+                                </a>
+                            @else
+                                <button onclick="selectPackage('{{ $pkg->id }}', '{{ $pkg->name }}', '{{ $pkg->price_bdt }}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                                    <i class="fa-solid fa-cart-shopping"></i> Pay via bKash
+                                </button>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -197,7 +203,7 @@
                         <tbody class="divide-y divide-gray-100">
                             @foreach($transactions as $trx)
                                 <tr>
-                                    <td class="py-3.5 px-4 font-bold text-gray-900">{{ $trx->package?->name ?? 'N/A' }}</td>
+                                    <td class="py-3.5 px-4 font-bold text-gray-900">{{ $trx->package?->name ?? ($trx->type === 'live_viva' ? 'Human Expert Live Board Viva' : 'N/A') }}</td>
                                     <td class="py-3.5 px-4 font-extrabold text-emerald-700">৳{{ number_format($trx->amount_bdt, 0) }}</td>
                                     <td class="py-3.5 px-4 font-mono text-gray-700">{{ $trx->bkash_number }}</td>
                                     <td class="py-3.5 px-4 font-mono font-bold text-indigo-700">{{ $trx->trx_id }}</td>

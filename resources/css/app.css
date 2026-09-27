@@ -21,20 +21,267 @@
     --color-accent-orange: #F59E0B;
 }
 
+:root {
+    --bg-page: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-header: rgba(255, 255, 255, 0.95);
+    --border-color: #E2E8F0;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+}
+
+[data-theme="dark"] {
+    --bg-page: #090D1A;
+    --bg-card: rgba(17, 24, 39, 0.7);
+    --bg-header: rgba(9, 13, 26, 0.85);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --text-main: #F3F4F6;
+    --text-muted: #9CA3AF;
+}
+
 /* Global scrollbars and customizations */
 body {
-    background-color: var(--color-bg-obsidian);
-    color: var(--color-text-main);
+    background-color: var(--bg-page);
+    color: var(--text-main);
     font-family: 'Inter', 'Hind Siliguri', sans-serif;
     overflow-x: hidden;
     line-height: 1.6;
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 40%);
-    background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+/* Light mode overrides (Default theme / Day Mode) */
+body:not([data-theme="dark"]) {
+    --bg-page: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-header: rgba(255, 255, 255, 0.95);
+    --border-color: #E2E8F0;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
+}
+
+body:not([data-theme="dark"]) .bg-bg-obsidian,
+body:not([data-theme="dark"]) section.bg-bg-obsidian,
+body:not([data-theme="dark"]) .bg-black\/10,
+body:not([data-theme="dark"]) .bg-white\/\[0\.01\] {
+    background-color: #F8FAFC !important;
+}
+
+/* Card boxes & hardcoded dark classes */
+body:not([data-theme="dark"]) .bg-bg-card,
+body:not([data-theme="dark"]) .bg-\[\#111827\],
+body:not([data-theme="dark"]) .bg-\[\#111827\]\/30,
+body:not([data-theme="dark"]) .bg-\[\#111827\]\/50,
+body:not([data-theme="dark"]) .bg-\[\#111827\]\/60,
+body:not([data-theme="dark"]) .bg-\[\#111827\]\/70,
+body:not([data-theme="dark"]) .bg-\[\#111827\]\/80,
+body:not([data-theme="dark"]) .bg-\[\#111827\]\/90,
+body:not([data-theme="dark"]) .bg-gray-900,
+body:not([data-theme="dark"]) .bg-gray-900\/80,
+body:not([data-theme="dark"]) .bg-gray-900\/90,
+body:not([data-theme="dark"]) .bg-gray-800,
+body:not([data-theme="dark"]) .bg-slate-900 {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Sub-containers & translucent inputs */
+body:not([data-theme="dark"]) .bg-black\/20,
+body:not([data-theme="dark"]) .bg-black\/30,
+body:not([data-theme="dark"]) .bg-black\/40,
+body:not([data-theme="dark"]) .bg-black\/50,
+body:not([data-theme="dark"]) .bg-white\/2,
+body:not([data-theme="dark"]) .bg-white\/3,
+body:not([data-theme="dark"]) .bg-white\/5,
+body:not([data-theme="dark"]) .bg-white\/10 {
+    background-color: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+}
+
+/* Form inputs in light mode */
+body:not([data-theme="dark"]) input[type="text"],
+body:not([data-theme="dark"]) input[type="email"],
+body:not([data-theme="dark"]) input[type="password"],
+body:not([data-theme="dark"]) textarea,
+body:not([data-theme="dark"]) select {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+}
+
+body:not([data-theme="dark"]) input::placeholder,
+body:not([data-theme="dark"]) textarea::placeholder {
+    color: #94A3B8 !important;
+}
+
+/* Borders in light mode */
+body:not([data-theme="dark"]) .border-white\/5,
+body:not([data-theme="dark"]) .border-white\/10,
+body:not([data-theme="dark"]) .border-white\/12,
+body:not([data-theme="dark"]) .border-white\/15,
+body:not([data-theme="dark"]) .border-white\/20,
+body:not([data-theme="dark"]) .border-border-glow {
+    border-color: #E2E8F0 !important;
+}
+
+/* Text colors */
+body:not([data-theme="dark"]) .text-white {
+    color: #0F172A !important;
+}
+
+body:not([data-theme="dark"]) .text-text-muted,
+body:not([data-theme="dark"]) .text-gray-300,
+body:not([data-theme="dark"]) .text-gray-400,
+body:not([data-theme="dark"]) .text-slate-300,
+body:not([data-theme="dark"]) .text-slate-400 {
+    color: #475569 !important;
+}
+
+body:not([data-theme="dark"]) .text-text-main,
+body:not([data-theme="dark"]) .text-gray-200 {
+    color: #1E293B !important;
+}
+
+/* Keep text WHITE on solid primary buttons & badges */
+body:not([data-theme="dark"]) .btn-primary,
+body:not([data-theme="dark"]) .btn-primary *,
+body:not([data-theme="dark"]) .bg-primary-emerald,
+body:not([data-theme="dark"]) .bg-primary-emerald *,
+body:not([data-theme="dark"]) .bg-gradient-to-r.from-emerald-600 *,
+body:not([data-theme="dark"]) .bg-emerald-600,
+body:not([data-theme="dark"]) .bg-emerald-600 *,
+body:not([data-theme="dark"]) .bg-indigo-600,
+body:not([data-theme="dark"]) .bg-indigo-600 *,
+body:not([data-theme="dark"]) .bg-teal-700,
+body:not([data-theme="dark"]) .bg-teal-700 * {
+    color: #FFFFFF !important;
+}
+
+body:not([data-theme="dark"]) .btn-secondary {
+    background-color: #F1F5F9;
+    color: #0F766E;
+    border-color: #CBD5E1;
+}
+
+body:not([data-theme="dark"]) .btn-secondary:hover {
+    background-color: #E2E8F0;
+    border-color: #94A3B8;
+}
+
+/* Chat bubble styling for light mode */
+.chat-bubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    max-width: 85%;
+    word-break: break-word;
+}
+.chat-bubble.bot {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #F3F4F6;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+}
+.chat-bubble.user {
+    background-color: #10B981;
+    color: #FFFFFF;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+}
+
+body:not([data-theme="dark"]) .chat-bubble.bot {
+    background-color: #E2E8F0 !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+}
+body:not([data-theme="dark"]) .chat-bubble.user {
+    background-color: #10B981 !important;
+    color: #FFFFFF !important;
+}
+
+/* Header & Footer in day mode */
+body:not([data-theme="dark"]) header#header {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border-color: #E2E8F0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+body:not([data-theme="dark"]) header#header a.text-text-muted {
+    color: #475569 !important;
+}
+body:not([data-theme="dark"]) header#header a.text-text-muted:hover {
+    color: #0F172A !important;
+}
+
+/* Active navigation link highlights */
+.nav-link {
+    position: relative;
+    transition: color 0.2s ease;
+}
+.nav-link.active {
+    color: #10B981 !important;
+    font-weight: 700 !important;
+}
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #10B981;
+    border-radius: 9999px;
+}
+
+body:not([data-theme="dark"]) .nav-link {
+    color: #475569 !important;
+}
+body:not([data-theme="dark"]) .nav-link:hover {
+    color: #0F172A !important;
+}
+body:not([data-theme="dark"]) .nav-link.active {
+    color: #059669 !important;
+    font-weight: 700 !important;
+}
+body:not([data-theme="dark"]) .nav-link.active::after {
+    background-color: #059669 !important;
+}
+
+body:not([data-theme="dark"]) footer {
+    background-color: #F1F5F9 !important;
+    border-color: #E2E8F0 !important;
+}
+
+body:not([data-theme="dark"]) .auth-card {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Dashboard Banner Light Mode Gradient */
+body:not([data-theme="dark"]) .from-emerald-950 {
+    background: linear-gradient(135deg, #065f46 0%, #0d9488 50%, #1e1b4b 100%) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+}
+body:not([data-theme="dark"]) .from-emerald-950 * {
+    color: #FFFFFF !important;
+}
+
+/* Modal dialog light mode styling */
+body:not([data-theme="dark"]) .modal-content {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+    color: #0F172A !important;
+}
+
+body:not([data-theme="dark"]) .scorecard-overlay {
+    background-color: rgba(255, 255, 255, 0.96) !important;
 }
 
 /* Utility Scrollbars */

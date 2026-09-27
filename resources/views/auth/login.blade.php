@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Candidate Sign In | Shera Viva')
+@section('title', 'ক্যান্ডিডেট সাইন ইন | সেরা ভাইভা')
 
 @section('content')
 <div class="auth-card" style="text-align: center; max-width: 440px;">
@@ -8,9 +8,9 @@
         <i class="fa-solid fa-graduation-cap"></i>
     </div>
 
-    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 6px; color: #111827;">Candidate Sign In</h2>
-    <p class="subtitle" style="font-size: 13px; color: #6b7280; margin-bottom: 24px; line-height: 1.5;">
-        Sign in with your Gmail account to start practicing AI Mock Vivas and receive 1 Free Viva credit upon registration.
+    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 6px;" class="text-white">ক্যান্ডিডেট প্রবেশ করুন</h2>
+    <p class="subtitle" style="font-size: 13px; margin-bottom: 24px; line-height: 1.5;">
+        এআই মক ভাইভা অনুশীলন শুরু করতে আপনার জিমেইল অ্যাকাউন্ট দিয়ে প্রবেশ করুন এবং ১টি বিনামূল্যে ভাইভা ক্রেডিট পান।
     </p>
 
     @if($errors->any())
@@ -19,14 +19,15 @@
         </div>
     @endif
 
-    <a href="{{ route('auth.google') }}" class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px 20px; border-radius: 12px; background: #0f766e; color: #ffffff; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25); transition: all 0.2s;">
+    <!-- Lighter Google Login Button (Req #7) -->
+    <a href="{{ route('auth.google') }}" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 13px 20px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 14px; transition: all 0.2s;">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 20px; height: 20px; background: #ffffff; border-radius: 50%; padding: 2px;" alt="Google Logo">
-        Continue with Gmail (Google Login)
+        <span>জিমেইল (Google Login) দিয়ে প্রবেশ করুন</span>
     </a>
 
-    <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #f3f4f6; font-size: 12px; color: #6b7280;">
-        System Admin or Board Examiner?
-        <a href="/admin/login" style="color: #0f766e; font-weight: 700; text-decoration: none; margin-left: 4px;">Admin & Examiner Sign In <i class="fa-solid fa-arrow-right-long"></i></a>
+    <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid rgba(226, 232, 240, 0.2); font-size: 12px; color: #6b7280;">
+        সিস্টেম এডমিন বা ভাইভা বোর্ড পরীক্ষক?
+        <a href="/admin/login" style="color: #0f766e; font-weight: 700; text-decoration: none; margin-left: 4px;">এডমিন ও পরীক্ষক সাইন ইন <i class="fa-solid fa-arrow-right-long"></i></a>
     </div>
 </div>
 @endsection

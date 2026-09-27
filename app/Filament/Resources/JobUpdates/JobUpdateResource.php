@@ -13,12 +13,17 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class JobUpdateResource extends Resource
 {
     protected static ?string $model = JobUpdate::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Content & Study Library';
+
+    protected static ?string $navigationLabel = 'Job Circulars & Results';
 
     protected static ?string $recordTitleAttribute = 'title';
 

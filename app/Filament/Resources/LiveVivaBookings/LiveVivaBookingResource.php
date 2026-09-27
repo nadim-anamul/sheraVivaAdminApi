@@ -25,7 +25,7 @@ class LiveVivaBookingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedVideoCamera;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Human Board Viva';
+    protected static string|UnitEnum|null $navigationGroup = 'Human Board Viva';
 
     protected static ?string $navigationLabel = 'Human Live Viva Bookings';
 
@@ -69,7 +69,7 @@ class LiveVivaBookingResource extends Resource
 
                 Select::make('status')
                     ->options([
-                        'pending_payment' => 'Pending bKash Payment',
+                        'pending_payment' => 'Pending Admin Approval',
                         'scheduled' => 'Scheduled & Meet Link Ready',
                         'completed' => 'Session Completed & Scorecard Uploaded',
                         'cancelled' => 'Cancelled',
@@ -114,6 +114,13 @@ class LiveVivaBookingResource extends Resource
 
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending_payment' => 'Pending Admin Approval',
+                        'scheduled' => 'Scheduled',
+                        'completed' => 'Completed',
+                        'cancelled' => 'Cancelled',
+                        default => ucfirst(str_replace('_', ' ', $state)),
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'completed' => 'success',
                         'scheduled' => 'info',

@@ -207,6 +207,26 @@ class DatabaseSeeder extends Seeder
         // 5. Seed Interviewers
         $interviewers = [
             [
+                'name' => 'Md. Shadman Akif',
+                'email' => 'shadman.akif@seraviva.com',
+                'phone' => '+8801886399786',
+                'designation' => 'Assistant Commissioner (Land) & Executive Magistrate | 40th BCS (Administration)',
+                'bio' => '40th BCS (Administration) Cadre Officer. B.Sc. in Chemical Engineering from BUET, CSCM®. Upazila Land Office, Mohammadpur, Magura. Expert in BCS Administration viva board preparation, cadre choices, and executive administration.',
+                'base_price' => 500,
+                'avatar_url' => '/images/interviewers/shadman_akif.jpg',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Md. Omar',
+                'email' => 'md.omar@seraviva.com',
+                'phone' => '+8801711998877',
+                'designation' => 'Senior Officer, Eastern Bank Ltd | MBA (IBA, DU)',
+                'bio' => 'Senior Officer at Eastern Bank Ltd. MBA from IBA, Dhaka University & B.Sc. in Biochemistry from Dhaka University. Specialist in corporate banking interviews, bank officer recruitment boards, and aptitude coaching.',
+                'base_price' => 500,
+                'avatar_url' => '/images/interviewers/md_omar.jpg',
+                'is_active' => true,
+            ],
+            [
                 'name' => 'Dr. Mahbubur Rahman',
                 'email' => 'mahbub@seraviva.com',
                 'phone' => '+8801711223344',

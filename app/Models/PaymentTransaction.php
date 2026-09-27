@@ -46,4 +46,10 @@ class PaymentTransaction extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+
+    public function liveVivaBooking(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(LiveVivaBooking::class, 'payment_transaction_id');
+    }
 }
+

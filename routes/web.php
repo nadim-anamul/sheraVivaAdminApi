@@ -8,6 +8,11 @@ use App\Http\Controllers\Candidate\PracticeController;
 use App\Http\Controllers\MeetingController;
 use App\Models\Interviewer;
 use App\Models\JobUpdate;
+use App\Models\MockSession;
+use App\Models\QuestionBank;
+use App\Models\VivaAdvice;
+use App\Models\VivaPackage;
+use App\Models\VivaRule;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,7 +32,21 @@ Route::get('/', function () {
         ->limit(4)
         ->get();
 
-    return view('welcome', compact('interviewers', 'circulars', 'results'));
+    $packages = VivaPackage::where('is_active', true)->get();
+
+    $sampleQuestions = QuestionBank::latest()->limit(6)->get();
+
+    $advices = VivaAdvice::where('is_active', true)->limit(3)->get();
+
+    $rules = VivaRule::where('is_active', true)->limit(2)->get();
+
+    $stats = [
+        'total_sessions' => MockSession::count() + 25000,
+        'total_questions' => QuestionBank::count(),
+        'total_interviewers' => Interviewer::count(),
+    ];
+
+    return view('welcome', compact('interviewers', 'circulars', 'results', 'packages', 'sampleQuestions', 'advices', 'rules', 'stats'));
 });
 
 // Legal & Google OAuth Compliance Routes
@@ -61,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/packages', [PackageController::class, 'showPackagesPage'])->name('candidate.packages');
     Route::post('/packages/bkash-submit', [PackageController::class, 'submitBkashPayment'])->name('candidate.payment.submit');
     Route::get('/live-vivas', [LiveVivaController::class, 'showLiveVivasPage'])->name('candidate.live_vivas');
+    Route::post('/live-vivas/book', [LiveVivaController::class, 'submitLiveVivaBooking'])->name('candidate.live_vivas.book');
     Route::get('/viva/join', [MeetingController::class, 'showJoinForm'])->name('viva.join.form');
     Route::post('/viva/join', [MeetingController::class, 'handleJoinForm'])->name('viva.join.handle');
     Route::get('/viva/meeting/{meeting_code}', [MeetingController::class, 'join'])->name('viva.meeting');
