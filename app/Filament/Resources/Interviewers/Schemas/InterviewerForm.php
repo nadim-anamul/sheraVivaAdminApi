@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Interviewers\Schemas;
 
+use App\Helpers\ImageOptimizer;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class InterviewerForm
 {
@@ -41,10 +44,26 @@ class InterviewerForm
                     ->label('Expert Avatar Picture Upload')
                     ->image()
                     ->directory('images/interviewers')
+                    ->disk('public')
                     ->visibility('public')
-                    ->preserveFilenames()
-                    ->imageEditor()
-                    ->helperText('Upload profile image file for expert (PNG / JPG / WEBP).'),
+                    ->maxSize(5120)
+                    ->getUploadedFileNameForStorageUsing(function (TemporaryUploadedFile $file, callable $get): string {
+                        $name = $get('name') ? Str::slug($get('name')) : 'expert';
+                        return "expert-{$name}-" . time() . '-' . Str::random(4) . '.' . $file->getClientOriginalExtension();
+                    })
+                    ->saveUploadedFileUsing(function (TemporaryUploadedFile $file, callable $get): string {
+                        $name = $get('name') ? Str::slug($get('name')) : 'expert';
+                        $originalExt = strtolower($file->getClientOriginalExtension());
+                        $filename = "expert-{$name}-" . time() . '-' . Str::random(4) . '.' . $originalExt;
+                        
+                        $storedRelativePath = $file->storeAs('images/interviewers', $filename, 'public');
+                        $fullPath = storage_path('app/public/' . $storedRelativePath);
+                        
+                        $optimizedFullPath = ImageOptimizer::optimizeAndConvertToWebp($fullPath, 600, 600, 85);
+                        
+                        return 'images/interviewers/' . basename($optimizedFullPath);
+                    })
+                    ->helperText('Upload profile image for expert (PNG / JPG / WEBP). Image will be automatically renamed & optimized to WebP.'),
                 Toggle::make('is_active')
                     ->default(true),
             ]);

@@ -27,6 +27,32 @@ class Interviewer extends Model
     ];
 
     /**
+     * Format avatar URL dynamically whether stored as relative storage path, public image, or HTTP URL.
+     */
+    public function getAvatarUrlAttribute(?string $value): string
+    {
+        if (empty($value)) {
+            return 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&h=256&q=80';
+        }
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        $clean = ltrim($value, '/');
+
+        if (str_starts_with($clean, 'storage/')) {
+            return asset($clean);
+        }
+
+        if (file_exists(public_path($clean))) {
+            return asset($clean);
+        }
+
+        return asset('storage/' . $clean);
+    }
+
+    /**
      * Get availability blocks for this interviewer.
      */
     public function availabilityBlocks(): HasMany
