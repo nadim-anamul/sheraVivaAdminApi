@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Interviewers\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -36,9 +37,14 @@ class InterviewerForm
                     ->default(0)
                     ->required()
                     ->helperText('Viva price in BDT (e.g. 500)'),
-                TextInput::make('avatar_url')
-                    ->url()
-                    ->maxLength(255),
+                FileUpload::make('avatar_url')
+                    ->label('Expert Avatar Picture Upload')
+                    ->image()
+                    ->directory('images/interviewers')
+                    ->visibility('public')
+                    ->preserveFilenames()
+                    ->imageEditor()
+                    ->helperText('Upload profile image file for expert (PNG / JPG / WEBP).'),
                 Toggle::make('is_active')
                     ->default(true),
             ]);

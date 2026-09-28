@@ -97,53 +97,128 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 3. Seed Viva Category configurations
-        $categories = [
+        // 3. Seed Viva Category configurations (Req #8: 3 Major categories + Subcategories)
+        $majorCategories = [
             [
-                'slug' => 'administration',
-                'title' => 'BCS Administration Board',
-                'subtitle' => 'Assistant Commissioner & Executive Magistrate',
+                'slug' => 'bcs',
+                'title' => 'বিসিএস (BCS)',
+                'subtitle' => 'বিসিএস ক্যাডার ও নন-ক্যাডার ভাইভা',
+                'group_type' => 'major',
                 'icon_name' => 'gavel_rounded',
-                'color_hex' => '#0F766E', // Deep Teal
+                'color_hex' => '#0F766E',
+                'master_direction' => "You are an official BPSC Board Chairman evaluating a BCS candidate. Probe heavily into Constitution of Bangladesh, Liberation War 1971, District History, Academic Major application in civil administration, and 1st choice cadre suitability under high pressure.",
                 'is_active' => true,
             ],
             [
-                'slug' => 'police',
-                'title' => 'BCS Police Board',
-                'subtitle' => 'Assistant Superintendent of Police (ASP)',
-                'icon_name' => 'local_police_rounded',
-                'color_hex' => '#1E3A8A', // Royal Blue
-                'is_active' => true,
-            ],
-            [
-                'slug' => 'foreign_affairs',
-                'title' => 'BCS Foreign Affairs Board',
-                'subtitle' => 'Foreign Affairs Cadre (Assistant Secretary)',
-                'icon_name' => 'public_rounded',
-                'color_hex' => '#0369A1', // Sky Blue
-                'is_active' => true,
-            ],
-            [
-                'slug' => 'bank_ad',
-                'title' => 'Bangladesh Bank AD Board',
-                'subtitle' => 'Assistant Director (Central Banking)',
+                'slug' => 'bank-govt',
+                'title' => 'অন্যান্য সরকারী চাকুরী ও ব্যাংক',
+                'subtitle' => 'বাংলাদেশ ব্যাংক, সরকারী ব্যাংক, প্রাইমারী শিক্ষক ও ৩য়/৪র্থ শ্রেণী',
+                'group_type' => 'major',
                 'icon_name' => 'account_balance_rounded',
-                'color_hex' => '#D97706', // Warm Orange
+                'color_hex' => '#1E3A8A',
+                'master_direction' => "You are a Senior Board Examiner evaluating candidates for Bangladesh Bank AD, Commercial Banks, and Government Directorate Posts. Focus on Monetary Policy, Financial Regulations, General Knowledge, Basic Mathematics & Administrative Rules.",
                 'is_active' => true,
             ],
             [
-                'slug' => 'primary_teacher',
-                'title' => 'Primary Teacher Board',
-                'subtitle' => 'Primary Assistant School Teacher',
-                'icon_name' => 'school_rounded',
-                'color_hex' => '#BE123C', // Deep Rose
+                'slug' => 'corporate',
+                'title' => 'কর্পোরেট (Corporate)',
+                'subtitle' => 'মাল্টিন্যাশনাল, ব্যাংকিং MTO ও কর্পোরেট গ্রুপ নিয়োগ',
+                'group_type' => 'major',
+                'icon_name' => 'business_center_rounded',
+                'color_hex' => '#D97706',
+                'master_direction' => "You are a Corporate HR Director & CEO interviewing Management Trainee Officers (MTO). Test problem-solving skills, leadership under crisis, analytical thinking, business communication, and commercial awareness.",
                 'is_active' => true,
             ],
         ];
 
-        $categoryModels = [];
-        foreach ($categories as $cat) {
-            $categoryModels[$cat['slug']] = VivaCategory::create($cat);
+        $createdMajors = [];
+        foreach ($majorCategories as $cat) {
+            $createdMajors[$cat['slug']] = VivaCategory::updateOrCreate(['slug' => $cat['slug']], $cat);
+        }
+
+        // Subcategories
+        $subCategories = [
+            [
+                'parent_id' => $createdMajors['bcs']->id,
+                'slug' => 'administration',
+                'title' => 'BCS Administration Board',
+                'subtitle' => 'Assistant Commissioner & Executive Magistrate',
+                'group_type' => 'subcategory',
+                'icon_name' => 'gavel_rounded',
+                'color_hex' => '#0F766E',
+                'master_direction' => 'Focus on Mobile Court Act 2009, Land Management, Executive Administration, Upazila Administration, and District Magistrate duties.',
+                'is_active' => true,
+            ],
+            [
+                'parent_id' => $createdMajors['bcs']->id,
+                'slug' => 'police',
+                'title' => 'BCS Police Board',
+                'subtitle' => 'Assistant Superintendent of Police (ASP)',
+                'group_type' => 'subcategory',
+                'icon_name' => 'local_police_rounded',
+                'color_hex' => '#1E3A8A',
+                'master_direction' => 'Focus on Penal Code, Criminal Procedure Code (CrPC), Cyber Crime, Public Order Management, and Law Enforcement Leadership.',
+                'is_active' => true,
+            ],
+            [
+                'parent_id' => $createdMajors['bcs']->id,
+                'slug' => 'foreign_affairs',
+                'title' => 'BCS Foreign Affairs Board',
+                'subtitle' => 'Foreign Affairs Cadre (Assistant Secretary)',
+                'group_type' => 'subcategory',
+                'icon_name' => 'public_rounded',
+                'color_hex' => '#0369A1',
+                'master_direction' => 'Focus on Foreign Policy of Bangladesh, Bilateral Relations, International Organizations (UN, SAARC, BIMSTEC), and Global Economic Diplomacy.',
+                'is_active' => true,
+            ],
+            [
+                'parent_id' => $createdMajors['bank-govt']->id,
+                'slug' => 'bank_ad',
+                'title' => 'Bangladesh Bank AD Board',
+                'subtitle' => 'Assistant Director (Central Banking)',
+                'group_type' => 'subcategory',
+                'icon_name' => 'account_balance_rounded',
+                'color_hex' => '#D97706',
+                'master_direction' => 'Focus on Banking Companies Act, Inflation Management, Foreign Exchange Reserves, Clearing House, and Central Bank Supervision.',
+                'is_active' => true,
+            ],
+            [
+                'parent_id' => $createdMajors['bank-govt']->id,
+                'slug' => 'primary_teacher',
+                'title' => 'Primary Assistant Teacher Board',
+                'subtitle' => 'Primary School Teacher Recruitment',
+                'group_type' => 'subcategory',
+                'icon_name' => 'school_rounded',
+                'color_hex' => '#BE123C',
+                'master_direction' => 'Focus on Child Psychology, Primary Education Curriculum, National Education Policy, Bangabandhu & Bangladesh Studies.',
+                'is_active' => true,
+            ],
+            [
+                'parent_id' => $createdMajors['bank-govt']->id,
+                'slug' => 'govt_3rd_4th',
+                'title' => '৩য় ও ৪থ শ্রেণীর সরকারি চাকুরী',
+                'subtitle' => 'অফিস সহকারী, কম্পিউটার অপারেটর ও মাঠকর্মী',
+                'group_type' => 'subcategory',
+                'icon_name' => 'work_outline_rounded',
+                'color_hex' => '#4F46E5',
+                'master_direction' => 'Focus on General Knowledge, Official Correspondence, Basic Computer Literacy, and Civil Service Rules.',
+                'is_active' => true,
+            ],
+            [
+                'parent_id' => $createdMajors['corporate']->id,
+                'slug' => 'corporate_mto',
+                'title' => 'Corporate MTO & Officer',
+                'subtitle' => 'Management Trainee Officer & Executive',
+                'group_type' => 'subcategory',
+                'icon_name' => 'trending_up_rounded',
+                'color_hex' => '#059669',
+                'master_direction' => 'Focus on Corporate Leadership, Case Study Analysis, Strategic Planning, and Team Coordination under Pressure.',
+                'is_active' => true,
+            ],
+        ];
+
+        foreach ($subCategories as $sub) {
+            VivaCategory::updateOrCreate(['slug' => $sub['slug']], $sub);
         }
 
         // 4. Seed Job Updates (Circulars & Results)
@@ -260,13 +335,15 @@ class DatabaseSeeder extends Seeder
 
         $interviewerModels = [];
         foreach ($interviewers as $int) {
-            $interviewerModels[] = Interviewer::create($int);
+            $interviewerModels[] = Interviewer::updateOrCreate(['email' => $int['email']], $int);
             // Create user account for examiner login
-            User::create([
-                'name' => $int['name'],
-                'email' => $int['email'],
-                'password' => 'password',
-            ]);
+            User::firstOrCreate(
+                ['email' => $int['email']],
+                [
+                    'name' => $int['name'],
+                    'password' => bcrypt('password'),
+                ]
+            );
         }
 
         // 6. Seed Availability Blocks (This automatically triggers Slot generation in model events!)
@@ -337,9 +414,10 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($vivaHistory as $history) {
+            $catObj = VivaCategory::where('slug', $history['category'])->first() ?? VivaCategory::first();
             $session = MockSession::create([
                 'user_id' => $candidate->id,
-                'viva_category_id' => $categoryModels[$history['category']]->id,
+                'viva_category_id' => $catObj ? $catObj->id : 1,
                 'transcript' => $history['transcript'],
                 'viva_date' => $history['date'],
             ]);
@@ -473,11 +551,13 @@ class DatabaseSeeder extends Seeder
 
         $candidateModels = [$candidate];
         foreach ($fakeCandidates as $fc) {
-            $candidateModels[] = User::create([
-                'name' => $fc['name'],
-                'email' => $fc['email'],
-                'password' => bcrypt('password'),
-            ]);
+            $candidateModels[] = User::firstOrCreate(
+                ['email' => $fc['email']],
+                [
+                    'name' => $fc['name'],
+                    'password' => bcrypt('password'),
+                ]
+            );
         }
 
         // Get slots and seed multiple bookings

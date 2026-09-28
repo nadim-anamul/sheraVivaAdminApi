@@ -11,6 +11,7 @@ use App\Models\JobUpdate;
 use App\Models\MockSession;
 use App\Models\QuestionBank;
 use App\Models\VivaAdvice;
+use App\Models\VivaCategory;
 use App\Models\VivaPackage;
 use App\Models\VivaRule;
 use Illuminate\Support\Facades\Route;
@@ -40,13 +41,15 @@ Route::get('/', function () {
 
     $rules = VivaRule::where('is_active', true)->limit(2)->get();
 
+    $vivaCategories = VivaCategory::whereNull('parent_id')->with('subcategories')->get();
+
     $stats = [
         'total_sessions' => MockSession::count() + 25000,
         'total_questions' => QuestionBank::count(),
         'total_interviewers' => Interviewer::count(),
     ];
 
-    return view('welcome', compact('interviewers', 'circulars', 'results', 'packages', 'sampleQuestions', 'advices', 'rules', 'stats'));
+    return view('welcome', compact('interviewers', 'circulars', 'results', 'packages', 'sampleQuestions', 'advices', 'rules', 'stats', 'vivaCategories'));
 });
 
 // Legal & Google OAuth Compliance Routes

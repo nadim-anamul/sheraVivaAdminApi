@@ -38,61 +38,173 @@
 <body class="bg-bg-obsidian text-text-main font-sans min-h-screen flex flex-col antialiased">
 
     <!-- Header Navigation Bar -->
-    <header id="header" class="sticky top-0 z-50 bg-bg-obsidian/85 backdrop-blur-md border-b border-white/5 py-3.5 transition-all duration-300">
-        <div class="max-w-[1200px] mx-auto px-6 w-full flex items-center justify-between">
-            <a href="/" class="font-display font-extrabold text-2xl text-white flex items-center gap-2 no-underline hover:opacity-90">
-                <i class="fa-solid fa-graduation-cap text-primary-emerald"></i> Shera <span class="bg-gradient-to-r from-primary-emerald to-emerald-300 bg-clip-text text-transparent">Viva</span>
+    <header id="header" class="sticky top-0 z-50 bg-white/90 dark:bg-[#090D1A]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 transition-all duration-300">
+        <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <!-- Brand Logo -->
+            <a href="/" class="font-display font-black text-xl sm:text-2xl flex items-center gap-2.5 no-underline shrink-0 group">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-graduation-cap text-emerald-500 text-lg"></i>
+                </div>
+                <div class="flex items-center tracking-tight">
+                    <span class="logo-text-shera font-extrabold text-slate-900 dark:text-white">Shera</span>
+                    <span class="bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 bg-clip-text text-transparent font-black ml-1">Viva</span>
+                </div>
             </a>
-            
-            <div class="flex items-center gap-3 lg:hidden">
-                <!-- Theme toggle button for mobile -->
-                <button id="theme-toggle-mobile" class="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-300 bg-slate-100 text-slate-800" aria-label="Toggle Theme">
-                    <i class="fa-solid fa-sun text-amber-500"></i>
-                </button>
 
-                <!-- Mobile Toggler Button -->
-                <button id="mobile-menu-toggle" class="text-text-muted hover:text-white focus:outline-none transition-colors p-1" aria-label="Toggle menu">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-            </div>
-            
-            <!-- Nav Links -->
-            <nav id="navbar-links" class="hidden lg:flex items-center gap-6 absolute lg:static top-[73px] left-0 w-full lg:w-auto bg-bg-obsidian lg:bg-transparent border-b lg:border-none border-white/5 p-6 lg:p-0 flex-col lg:flex-row items-stretch lg:items-center">
-                <a href="/" class="nav-link {{ request()->is('/') ? 'active' : '' }} text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">হোম</a>
-                
-                <!-- Quick Feature Action Buttons in Top Bar (Req #6) -->
-                <a href="/viva/practice" class="btn-primary py-1.5 px-3 text-xs flex items-center gap-1.5 no-underline {{ request()->is('viva/practice*') ? 'ring-2 ring-emerald-400 shadow-lg' : '' }}">
-                    <i class="fa-solid fa-robot"></i> এআই প্র্যাকটিস
+            <!-- Desktop Nav Links (Center) -->
+            <nav class="hidden lg:flex items-center gap-1 xl:gap-1.5">
+                <a href="/" class="nav-item-link {{ request()->is('/') ? 'active' : '' }}">
+                    <i class="fa-solid fa-house text-xs opacity-75"></i>
+                    <span>হোম</span>
                 </a>
-                <a href="/live-vivas" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-1.5 px-3 rounded-lg flex items-center gap-1.5 no-underline transition {{ request()->is('live-vivas*') ? 'ring-2 ring-indigo-400 shadow-lg' : '' }}">
-                    <i class="fa-solid fa-video"></i> লাইভ ভাইভা
+                
+                <a href="/viva/practice" class="nav-item-badge emerald {{ request()->is('viva/practice*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-robot text-xs"></i>
+                    <span>এআই প্র্যাকটিস</span>
+                </a>
+                
+                <a href="/live-vivas" class="nav-item-badge indigo {{ request()->is('live-vivas*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-video text-xs"></i>
+                    <span>লাইভ এক্সপার্ট ভাইভা</span>
                 </a>
 
-                <a href="/library" class="nav-link {{ request()->is('library*') ? 'active' : '' }} text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">প্রশ্ন ও স্টাডি লাইব্রেরি</a>
-                <a href="/job-updates" class="nav-link {{ request()->is('job-updates*') ? 'active' : '' }} text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">ক্যারিয়ার আপডেটস</a>
-                <a href="/guidelines" class="nav-link {{ request()->is('guidelines*') ? 'active' : '' }} text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">গাইডলাইন</a>
-                
+                <a href="/library" class="nav-item-link {{ request()->is('library*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-book-open text-xs opacity-75"></i>
+                    <span>প্রশ্ন ও স্টাডি লাইব্রেরি</span>
+                </a>
+
+                <a href="/job-updates" class="nav-item-link {{ request()->is('job-updates*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-briefcase text-xs opacity-75"></i>
+                    <span>ক্যারিয়ার আপডেটস</span>
+                </a>
+
+                <a href="/guidelines" class="nav-item-link {{ request()->is('guidelines*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-compass text-xs opacity-75"></i>
+                    <span>গাইডলাইন</span>
+                </a>
+            </nav>
+
+            <!-- Desktop Actions (Right: Auth & Theme Toggle) -->
+            <div class="hidden lg:flex items-center gap-2.5 shrink-0">
                 @auth
-                    <a href="/dashboard" class="nav-link {{ request()->is('dashboard*') || request()->is('candidate*') ? 'active' : '' }} text-text-muted hover:text-white transition-colors font-medium text-sm no-underline py-2 lg:py-0">ড্যাশবোর্ড</a>
-                    <form action="/logout" method="POST" class="inline py-2 lg:py-0">
+                    <a href="/dashboard" class="nav-item-link {{ request()->is('dashboard*') || request()->is('candidate*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-gauge text-xs"></i>
+                        <span>ড্যাশবোর্ড</span>
+                    </a>
+                    <form action="/logout" method="POST" class="inline">
                         @csrf
-                        <button type="submit" class="btn-secondary w-full lg:w-auto py-1.5 px-3.5 text-xs">
-                            <i class="fa-solid fa-right-from-bracket"></i> লগআউট
+                        <button type="submit" class="nav-btn-outline cursor-pointer">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>লগআউট</span>
                         </button>
                     </form>
                 @else
-                    <div class="flex flex-col lg:flex-row gap-2.5 mt-4 lg:mt-0 items-stretch lg:items-center">
-                        <a href="/login" class="px-3.5 py-1.5 text-xs font-bold rounded-lg border border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200 transition text-center no-underline">লগইন</a>
-                        <a href="/register" class="btn-primary py-1.5 px-3.5 text-xs text-center justify-center">নিবন্ধন</a>
-                    </div>
+                    <a href="/login" class="nav-btn-outline no-underline">
+                        লগইন
+                    </a>
+                    <a href="/register" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:opacity-95 shadow-sm shadow-emerald-500/20 transition no-underline hover:scale-[1.02]">
+                        নিবন্ধন
+                    </a>
                 @endauth
 
-                <!-- Day/Night Mode Theme Switcher (Req #1 & #9) -->
-                <button id="theme-toggle" class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer bg-slate-100 border-slate-300 text-slate-800 hover:bg-slate-200" aria-label="Toggle Theme">
+                <!-- Theme Toggle Desktop -->
+                <button id="theme-toggle" class="nav-theme-btn" aria-label="Toggle Theme">
                     <i id="theme-icon" class="fa-solid fa-sun text-amber-500"></i>
                     <span id="theme-text">ডে মোড</span>
                 </button>
-            </nav>
+            </div>
+
+            <!-- Mobile Bar Right (Theme Toggle & Menu Drawer Button) -->
+            <div class="flex items-center gap-2 lg:hidden">
+                <button id="theme-toggle-mobile" class="nav-theme-btn !px-2.5" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-sun text-amber-500"></i>
+                </button>
+
+                <button id="mobile-menu-toggle" class="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 focus:outline-none transition-colors" aria-label="Toggle menu">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Drawer Dropdown -->
+        <div id="navbar-links" class="hidden lg:hidden border-t border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#090D1A]/95 backdrop-blur-xl px-4 py-5 shadow-2xl transition-all duration-300">
+            <div class="flex flex-col gap-2">
+                <a href="/" class="mobile-nav-link {{ request()->is('/') ? 'active' : '' }}">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-house text-emerald-500"></i>
+                        <span>হোম</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                </a>
+
+                <a href="/viva/practice" class="mobile-nav-link {{ request()->is('viva/practice*') ? 'active' : '' }}">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-robot text-emerald-500"></i>
+                        <span>এআই প্র্যাকটিস</span>
+                    </span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">এআই</span>
+                </a>
+
+                <a href="/live-vivas" class="mobile-nav-link {{ request()->is('live-vivas*') ? 'active' : '' }}">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-video text-indigo-500"></i>
+                        <span>লাইভ এক্সপার্ট ভাইভা ও ফিডব্যাক</span>
+                    </span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">লাইভ</span>
+                </a>
+
+                <a href="/library" class="mobile-nav-link {{ request()->is('library*') ? 'active' : '' }}">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-book-open text-amber-500"></i>
+                        <span>প্রশ্ন ও স্টাডি লাইব্রেরি</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                </a>
+
+                <a href="/job-updates" class="mobile-nav-link {{ request()->is('job-updates*') ? 'active' : '' }}">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-briefcase text-blue-500"></i>
+                        <span>ক্যারিয়ার আপডেটস</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                </a>
+
+                <a href="/guidelines" class="mobile-nav-link {{ request()->is('guidelines*') ? 'active' : '' }}">
+                    <span class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-compass text-teal-500"></i>
+                        <span>গাইডলাইন</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+                </a>
+
+                <div class="pt-3 mt-2 border-t border-slate-200 dark:border-white/10 flex flex-col gap-2.5">
+                    @auth
+                        <a href="/dashboard" class="mobile-nav-link {{ request()->is('dashboard*') || request()->is('candidate*') ? 'active' : '' }}">
+                            <span class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-gauge text-indigo-500"></i>
+                                <span>ক্যান্ডিডেট ড্যাশবোর্ড</span>
+                            </span>
+                        </a>
+                        <form action="/logout" method="POST" class="w-full">
+                            @csrf
+                            <button type="submit" class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span>লগআউট</span>
+                            </button>
+                        </form>
+                    @else
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <a href="/login" class="py-2.5 text-center text-xs font-bold rounded-xl border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-white/5 no-underline">
+                                লগইন
+                            </a>
+                            <a href="/register" class="py-2.5 text-center text-xs font-bold rounded-xl bg-emerald-600 text-white shadow-md no-underline">
+                                নিবন্ধন
+                            </a>
+                        </div>
+                    @endauth
+                </div>
+            </div>
         </div>
     </header>
 
@@ -126,9 +238,13 @@
             if (savedTheme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 document.body?.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('dark');
+                document.body?.classList.add('dark');
             } else {
                 document.documentElement.removeAttribute('data-theme');
                 document.body?.removeAttribute('data-theme');
+                document.documentElement.classList.remove('dark');
+                document.body?.classList.remove('dark');
             }
         })();
 
@@ -143,11 +259,15 @@
                 if (theme === 'dark') {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     document.body.setAttribute('data-theme', 'dark');
+                    document.documentElement.classList.add('dark');
+                    document.body.classList.add('dark');
                     if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-indigo-400';
                     if (themeText) themeText.innerText = 'নাইট মোড';
                 } else {
                     document.documentElement.removeAttribute('data-theme');
                     document.body.removeAttribute('data-theme');
+                    document.documentElement.classList.remove('dark');
+                    document.body.classList.remove('dark');
                     if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-amber-500';
                     if (themeText) themeText.innerText = 'ডে মোড';
                 }
@@ -157,7 +277,7 @@
             updateThemeUI(currentTheme);
 
             function toggleTheme() {
-                const isDark = document.body.getAttribute('data-theme') === 'dark';
+                const isDark = document.body.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark');
                 const newTheme = isDark ? 'light' : 'dark';
                 localStorage.setItem('shera_viva_theme', newTheme);
                 updateThemeUI(newTheme);
@@ -173,7 +293,6 @@
             if (toggle && menu) {
                 toggle.addEventListener('click', function () {
                     menu.classList.toggle('hidden');
-                    menu.classList.toggle('flex');
                     const icon = toggle.querySelector('i');
                     if (icon) {
                         icon.classList.toggle('fa-bars');

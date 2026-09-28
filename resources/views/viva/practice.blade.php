@@ -7,7 +7,7 @@
 <div class="max-w-[1100px] mx-auto">
     
     <div class="bg-bg-card border border-border-glow rounded-2xl p-6 lg:p-8 backdrop-blur-md">
-        <h2 class="font-display text-xl lg:text-2xl font-bold mb-5 text-white flex items-center gap-2">
+        <h2 class="font-display text-xl lg:text-2xl font-bold mb-5 text-slate-900 dark:text-white flex items-center gap-2">
             <i class="fa-solid fa-robot text-primary-emerald"></i> Gemini 3.5 Flash AI Viva Board
         </h2>
 
@@ -25,14 +25,14 @@
             <div class="text-xs font-bold text-primary-emerald uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <i class="fa-solid fa-user-tie"></i> <span id="board-name">BCS Administration Board Chairman</span>
             </div>
-            <div class="text-base lg:text-lg font-semibold leading-relaxed text-white" id="q-text">
+            <div class="text-base lg:text-lg font-semibold leading-relaxed text-slate-900 dark:text-white" id="q-text">
                 <i class="fa-solid fa-spinner fa-spin"></i> Generating viva question with Gemini 3.5 Flash AI...
             </div>
         </div>
 
         <!-- Answer Box -->
         <div class="mt-5 flex flex-col gap-4">
-            <textarea id="answer-text" class="w-full bg-bg-obsidian/90 border border-border-glow rounded-xl p-4 text-white font-sans text-sm lg:text-base resize-y min-h-[110px] outline-none transition-all focus:border-primary-emerald" placeholder="Type your answer here in Bangla or English, or click 'Speak Answer' to talk..."></textarea>
+            <textarea id="answer-text" class="w-full bg-white dark:bg-bg-obsidian/90 border border-slate-300 dark:border-border-glow rounded-xl p-4 text-slate-900 dark:text-white font-sans text-sm lg:text-base resize-y min-h-[110px] outline-none transition-all focus:border-primary-emerald" placeholder="Type your answer here in Bangla or English, or click 'Speak Answer' to talk..."></textarea>
             
             <div class="flex justify-between items-center gap-4 flex-wrap">
                 <button class="bg-accent-blue/15 text-accent-blue border border-accent-blue/30 px-4.5 py-2.5 rounded-full font-semibold text-xs lg:text-sm cursor-pointer inline-flex items-center gap-2.5 transition-all duration-200 hover:bg-accent-blue/25" id="btn-speech">
@@ -46,21 +46,22 @@
         </div>
 
         <!-- Evaluation Results -->
-        <div class="bg-primary-emerald/5 border border-primary-emerald/30 rounded-2xl p-6 mt-6 hidden" id="eval-card">
+        <div class="bg-emerald-500/10 dark:bg-primary-emerald/5 border border-primary-emerald/30 rounded-2xl p-6 mt-6 hidden" id="eval-card">
             <div class="bg-primary-emerald text-white px-4 py-1.5 rounded-full font-extrabold text-sm lg:text-base inline-block mb-3.5 shadow-sm shadow-primary-emerald/25 font-display" id="eval-score">AI Score: 85/100</div>
-            <h3 class="text-white text-base font-bold mb-2">Board Feedback:</h3>
-            <p id="eval-feedback" class="text-text-main text-sm lg:text-base mb-4 leading-relaxed"></p>
+            <h3 class="text-slate-900 dark:text-white text-base font-bold mb-2">Board Feedback:</h3>
+            <p id="eval-feedback" class="text-slate-800 dark:text-text-main text-sm lg:text-base mb-4 leading-relaxed"></p>
 
             <h4 class="text-primary-emerald text-xs lg:text-sm font-bold mb-1 uppercase tracking-wide">Recommendations:</h4>
-            <p id="eval-recs" class="text-text-muted text-xs lg:text-sm mb-4 leading-relaxed white-space-pre-line"></p>
+            <p id="eval-recs" class="text-slate-600 dark:text-text-muted text-xs lg:text-sm mb-4 leading-relaxed white-space-pre-line"></p>
 
             <h4 class="text-accent-blue text-xs lg:text-sm font-bold mb-1 uppercase tracking-wide">Exemplary Model Answer:</h4>
-            <p id="eval-model" class="text-white text-xs lg:text-sm italic bg-white/3 p-4 rounded-xl border-l-3 border-l-accent-blue leading-relaxed"></p>
+            <p id="eval-model" class="text-slate-900 dark:text-white text-xs lg:text-sm italic bg-slate-100 dark:bg-white/3 p-4 rounded-xl border-l-3 border-l-accent-blue leading-relaxed"></p>
 
             <button class="btn-primary py-2.5 px-6 rounded-full font-bold text-xs lg:text-sm mt-5 bg-gradient-to-r from-accent-blue to-blue-600 hover:shadow-blue-500/20" id="btn-next-q">
                 Next Board Question <i class="fa-solid fa-arrow-right"></i>
             </button>
         </div>
+
 
     </div>
 

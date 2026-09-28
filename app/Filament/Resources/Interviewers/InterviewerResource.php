@@ -21,7 +21,7 @@ class InterviewerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Human Board Viva';
+    protected static string|UnitEnum|null $navigationGroup = 'Live Expert Viva & Feedback';
 
     protected static ?string $navigationLabel = 'Board Panel Experts';
 

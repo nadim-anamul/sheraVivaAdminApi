@@ -229,12 +229,24 @@ GUIDANCE;
             $conclusionGuidance = "This is Question #{$currentQuestionCount} of 20 (Minimum 8 questions required before conclusion). Set 'is_concluded': false and generate the next board question.";
         }
 
+        // Load Exam Category Master Direction if available
+        $categoryModel = \App\Models\VivaCategory::where('title', $categoryTitle)
+            ->orWhere('slug', strtolower($examType))
+            ->orWhere('title', 'like', "%{$examType}%")
+            ->first();
+
+        $masterDirectionContext = '';
+        if ($categoryModel && !empty($categoryModel->master_direction)) {
+            $masterDirectionContext = "EXAM CATEGORY MASTER BOARD DIRECTIVE:\n{$categoryModel->master_direction}\n\n";
+        }
+
         $prompt = <<<PROMPT
 You are the Honorable Chairman of a Bangladeshi Viva Board for '{$categoryTitle}' ({$examType} Selection).
 Target Position: {$position}
 Exam Type: {$examType}
 Candidate Profile/CV: {$candidateCv}
 {$choicesContext}
+{$masterDirectionContext}
 
 Your goal is to conduct an authentic 10-20 minute viva session (asking 8 to 20 questions adaptively). 
 - Questions 1-3: Candidate background, district history & academic major.
@@ -357,9 +369,19 @@ PROMPT;
             $sampleText .= "\n";
         }
 
+        $categoryModel = \App\Models\VivaCategory::where('slug', strtolower($examType))
+            ->orWhere('title', 'like', "%{$examType}%")
+            ->first();
+
+        $masterDirectionContext = '';
+        if ($categoryModel && !empty($categoryModel->master_direction)) {
+            $masterDirectionContext = "EXAM CATEGORY MASTER BOARD DIRECTIVE:\n{$categoryModel->master_direction}\n\n";
+        }
+
         $prompt = <<<PROMPT
 You are a senior Bangladeshi BPSC & Bank Viva Board analyst.
 Analyze the real candidate viva experiences below for Exam: '{$examType}' and Category/Subject: '{$subjectCat}'.
+{$masterDirectionContext}
 
 Your objective is to extract a highly condensed, authoritative Knowledge Matrix that will guide an AI Viva Simulator to generate authentic questions with minimal token usage.
 

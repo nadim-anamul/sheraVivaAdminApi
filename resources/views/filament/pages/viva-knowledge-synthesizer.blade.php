@@ -271,6 +271,37 @@
             </div>
         </div>
 
+        <!-- Active Category Master Directions Overview (Req #1) -->
+        <div class="synth-card" style="border-left: 4px solid #10B981;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <h3 style="font-size: 16px; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 8px;" class="dark:text-white">
+                    <i class="fa-solid fa-sliders text-emerald-500"></i> Active Exam Category Master Directions (AI Rules)
+                </h3>
+                <a href="/admin/viva-categories" target="_blank" style="font-size: 12px; font-weight: 700; color: #059669; text-decoration: underline;" class="dark:text-emerald-400">
+                    <i class="fa-solid fa-pen-to-square"></i> Manage Category Prompts in Admin
+                </a>
+            </div>
+            <p style="font-size: 13px; color: #6B7280; margin-bottom: 16px;" class="dark:text-gray-400">
+                These Master Directions are automatically injected into Gemini AI during Question Generation and Knowledge Synthesis to ensure domain-specific interrogations:
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
+                @foreach($categories as $cat)
+                    <div style="background: #F9FAFB; border: 1px solid #E5E7EB; padding: 12px 14px; border-radius: 10px;" class="dark:bg-gray-800/80 dark:border-gray-700">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="font-size: 13px; font-weight: 800; color: #111827;" class="dark:text-white">{{ $cat->title }}</span>
+                            <span style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 12px; background: {{ $cat->group_type === 'major' ? '#D1FAE5; color: #065F46;' : '#FEF3C7; color: #92400E;' }}">
+                                {{ strtoupper($cat->group_type ?? 'major') }}
+                            </span>
+                        </div>
+                        <p style="font-size: 12px; color: #4B5563; line-height: 1.4; margin: 0;" class="dark:text-gray-300">
+                            {{ $cat->master_direction ?: 'No custom master direction set. (Using default Gemini AI prompt)' }}
+                        </p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
         <!-- Synthesized Cards Grid -->
         @if($cards->isEmpty())
             <div class="synth-card" style="text-align: center; padding: 48px;">

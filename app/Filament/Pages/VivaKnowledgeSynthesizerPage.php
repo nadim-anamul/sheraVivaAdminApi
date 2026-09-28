@@ -104,6 +104,7 @@ class VivaKnowledgeSynthesizerPage extends Page
             'totalCards' => ExamKnowledgeBank::count(),
             'totalQuestionBankRecords' => QuestionBank::count(),
             'lastSynthesisDate' => ExamKnowledgeBank::max('last_synthesized_at'),
+            'categories' => \App\Models\VivaCategory::where('is_active', true)->get(),
             'cards' => ExamKnowledgeBank::when($this->selectedExamType !== 'All', function ($q) {
                 $q->where('exam_type', $this->selectedExamType);
             })->latest('last_synthesized_at')->get(),

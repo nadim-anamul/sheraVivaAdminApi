@@ -25,9 +25,9 @@ class LiveVivaBookingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedVideoCamera;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Human Board Viva';
+    protected static string|UnitEnum|null $navigationGroup = 'Live Expert Viva & Feedback';
 
-    protected static ?string $navigationLabel = 'Human Live Viva Bookings';
+    protected static ?string $navigationLabel = 'Live Expert Viva Bookings';
 
     public static function form(Schema $schema): Schema
     {
